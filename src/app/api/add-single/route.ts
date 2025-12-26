@@ -10,10 +10,15 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== ADD SINGLE API CALLED ===');
+    
     const body = await request.json();
     let { url } = body;
+    
+    console.log('Original URL:', url);
 
     if (!url || !validateUrl(url)) {
+      console.error('Invalid URL provided:', url);
       return NextResponse.json(
         { error: 'Invalid URL provided' },
         { status: 400 }
@@ -22,18 +27,29 @@ export async function POST(request: NextRequest) {
 
     // Clean and fix the URL
     url = cleanProductUrl(url);
+    console.log('After cleanProductUrl:', url);
+    
     url = fixBridalUrl(url);
+    console.log('After fixBridalUrl:', url);
+    
     const normalizedUrl = normalizeUrl(url);
+    console.log('After normalizeUrl:', normalizedUrl);
 
     // Check cache first
-    const { data: cached } = await supabase
+    console.log('Checking cache...');
+    const { data: cached, error: cacheError } = await supabase
       .from('products')
       .select('*')
       .eq('url', normalizedUrl)
       .gte('last_checked', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .single();
 
+    if (cacheError) {
+      console.log('Cache check error (this is OK if product not found):', cacheError.message);
+    }
+
     if (cached) {
+      console.log('Found in cache:', cached.id);
       await supabase
         .from('products')
         .update({ paste_count: cached.paste_count + 1 })
@@ -46,7 +62,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract with Firecrawl
-    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+    console.log('Calling Firecrawl API...');
+    const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,16 +88,21 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Firecrawl error:', errorText);
-      throw new Error(`Failed to extract product data: ${response.statusText}`);
+    console.log('Firecrawl status:', firecrawlResponse.status);
+
+    if (!firecrawlResponse.ok) {
+      const errorText = await firecrawlResponse.text();
+      console.error('Firecrawl error response:', errorText);
+      throw new Error(`Firecrawl returned ${firecrawlResponse.status}: ${errorText}`);
     }
 
-    const data = await response.json();
+    const data = await firecrawlResponse.json();
+    console.log('Firecrawl response:', JSON.stringify(data, null, 2));
     
     // Check if we got redirected to a parking/sale page
     const actualUrl = data?.data?.metadata?.url || data?.data?.metadata?.sourceURL;
+    console.log('Actual scraped URL:', actualUrl);
+    
     if (actualUrl && (
       actualUrl.includes('afternic.com') || 
       actualUrl.includes('forsale') ||
@@ -91,6 +113,7 @@ export async function POST(request: NextRequest) {
     }
     
     const extracted = data.data?.extract || {};
+    console.log('Extracted data:', extracted);
     
     // Validate we got actual product data
     if (!extracted.name || extracted.name.includes('forsale') || extracted.name.includes('parked')) {
@@ -125,17 +148,28 @@ export async function POST(request: NextRequest) {
       paste_count: 1,
     };
 
+    console.log('Saving to database:', productData);
+
     const { data: product, error: upsertError } = await supabase
       .from('products')
       .upsert(productData, { onConflict: 'url' })
       .select()
       .single();
 
-    if (upsertError) throw upsertError;
+    if (upsertError) {
+      console.error('Database error:', upsertError);
+      throw upsertError;
+    }
 
+    console.log('Product saved successfully:', product.id);
     return NextResponse.json({ success: true, product });
+    
   } catch (error: any) {
-    console.error('Add single error:', error);
+    console.error('=== ADD SINGLE ERROR ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
     return NextResponse.json(
       { error: error.message || 'Failed to add product' },
       { status: 500 }
