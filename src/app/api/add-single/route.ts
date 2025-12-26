@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { extractDomain, normalizeUrl, validateUrl } from '@/lib/utils';
+import { fixBridalUrl, cleanProductUrl } from '@/lib/domain-mapper';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,7 +11,7 @@ const supabase = createClient(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url } = body;
+    let { url } = body;
 
     if (!url || !validateUrl(url)) {
       return NextResponse.json(
@@ -19,6 +20,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Clean and fix the URL
+    url = cleanProductUrl(url);
+    url = fixBridalUrl(url);
     const normalizedUrl = normalizeUrl(url);
 
     // Check cache first
@@ -68,11 +72,30 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to extract product data');
+      const errorText = await response.text();
+      console.error('Firecrawl error:', errorText);
+      throw new Error(`Failed to extract product data: ${response.statusText}`);
     }
 
     const data = await response.json();
+    
+    // Check if we got redirected to a parking/sale page
+    const actualUrl = data?.data?.metadata?.url || data?.data?.metadata?.sourceURL;
+    if (actualUrl && (
+      actualUrl.includes('afternic.com') || 
+      actualUrl.includes('forsale') ||
+      actualUrl.includes('parked') ||
+      actualUrl.includes('godaddy')
+    )) {
+      throw new Error('Domain appears to be parked or for sale. Please check the URL.');
+    }
+    
     const extracted = data.data?.extract || {};
+    
+    // Validate we got actual product data
+    if (!extracted.name || extracted.name.includes('forsale') || extracted.name.includes('parked')) {
+      throw new Error('Could not find product information on this page. Please verify the URL.');
+    }
 
     // Parse price
     let priceNumber: number | null = null;
