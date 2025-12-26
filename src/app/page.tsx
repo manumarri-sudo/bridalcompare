@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Sparkles, Heart, TrendingUp } from "lucide-react";
+import { Sparkles, Heart, TrendingUp, Chrome } from "lucide-react";
 import TrendingSection from "@/components/trending/TrendingSection";
-import Bookmarklet from "@/components/ui/Bookmarklet";
 
 export default function HomePage() {
   return (
@@ -25,9 +24,45 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Bookmarklet Section */}
+      {/* Chrome Extension Section */}
       <section className="max-w-2xl mx-auto">
-        <Bookmarklet />
+        <div className="bridal-card p-8 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-bridal-gold/10 rounded-full flex items-center justify-center">
+              <Chrome className="w-7 h-7 text-bridal-gold" />
+            </div>
+            <div>
+              <h3 className="text-xl font-serif text-bridal-charcoal">Chrome Extension Available!</h3>
+              <p className="text-sm text-bridal-charcoal/60">Save products with one click while shopping</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-bridal-charcoal/70">
+              Install our Chrome extension to instantly save products from any bridal site:
+            </p>
+
+            <div className="bg-bridal-gold-light p-4 rounded-lg space-y-3">
+              <p className="font-medium text-bridal-charcoal">How to Install:</p>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-bridal-charcoal/70 ml-2">
+                <li>Download the BridalCompare Chrome Extension</li>
+                <li>Go to <code className="bg-white px-2 py-1 rounded">chrome://extensions/</code></li>
+                <li>Enable "Developer mode" (top right)</li>
+                <li>Click "Load unpacked" and select the extension folder</li>
+                <li>Start shopping - click the extension icon to save products!</li>
+              </ol>
+            </div>
+
+            <a 
+              href="https://github.com/manumarri-sudo/bridalcompare/releases" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bridal-btn-primary inline-block text-center"
+            >
+              Download Chrome Extension
+            </a>
+          </div>
+        </div>
       </section>
 
       {/* Features */}
