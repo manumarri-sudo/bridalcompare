@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     for (const url of validUrls) {
       try {
-        // Check cache (24 hours)
+        // Check cache
         const { data: cached } = await supabase
           .from('products')
           .select('*')
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Call Firecrawl with correct v1 API format
+        // Call Firecrawl
         const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
           method: 'POST',
           headers: {
@@ -86,11 +86,12 @@ export async function POST(request: NextRequest) {
         const extracted = data.data?.extract || {};
 
         // Parse price
-        let priceNumber = null;
+        let priceNumber: number | null = null;
         let currency = 'USD';
         if (extracted.price) {
           const cleaned = extracted.price.replace(/[₹$,\s]/g, '');
-          priceNumber = parseFloat(cleaned);
+          const parsed = parseFloat(cleaned);
+          priceNumber = isNaN(parsed) ? null : parsed;
           currency = extracted.price.includes('₹') ? 'INR' : 'USD';
         }
 
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
           url,
           source_domain: sourceDomain,
           title: extracted.name || null,
-          price_number: isNaN(priceNumber) ? null : priceNumber,
+          price_number: priceNumber,
           currency,
           image_url: extracted.image || null,
           designer: extracted.brand || null,
