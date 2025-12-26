@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { extractProductData, parsePrice } from '@/lib/firecrawl';
 import { extractDomain, normalizeUrl, validateUrl } from '@/lib/utils';
 import { z } from 'zod';
 
@@ -12,15 +13,45 @@ const ExtractRequestSchema = z.object({
   urls: z.array(z.string()).min(1).max(20),
 });
 
+// Simple in-memory rate limiting
+const rateLimits = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const limit = rateLimits.get(ip);
+
+  if (!limit || now > limit.resetAt) {
+    rateLimits.set(ip, { count: 1, resetAt: now + 3600000 }); // 1 hour
+    return true;
+  }
+
+  if (limit.count >= 100) {
+    return false;
+  }
+
+  limit.count++;
+  return true;
+}
+
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for') || 'unknown';
+  
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded. Please try again later.' },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { urls } = ExtractRequestSchema.parse(body);
 
+    // Validate and normalize URLs
     const validUrls = urls
       .filter(validateUrl)
       .map(normalizeUrl)
-      .filter((url, index, self) => self.indexOf(url) === index);
+      .filter((url, index, self) => self.indexOf(url) === index); // Dedupe
 
     if (validUrls.length === 0) {
       return NextResponse.json({
@@ -34,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     for (const url of validUrls) {
       try {
-        // Check cache
+        // Check cache (24 hours)
         const { data: cached } = await supabase
           .from('products')
           .select('*')
@@ -43,6 +74,7 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (cached) {
+          // Increment paste count
           await supabase
             .from('products')
             .update({ paste_count: cached.paste_count + 1 })
@@ -52,49 +84,16 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Call Firecrawl
-        const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.FIRECRAWL_API_KEY}`,
-          },
-          body: JSON.stringify({
-            url: url,
-            formats: ['extract'],
-            extract: {
-              schema: {
-                type: 'object',
-                properties: {
-                  name: { type: 'string' },
-                  price: { type: 'string' },
-                  image: { type: 'string' },
-                  brand: { type: 'string' },
-                  color: { type: 'string' },
-                  material: { type: 'string' },
-                },
-              },
-            },
-          }),
-        });
+        // Extract with timeout
+        const extractPromise = extractProductData(url);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Extraction timeout')), 30000)
+        );
 
-        if (!response.ok) {
-          throw new Error(`Firecrawl error: ${response.statusText}`);
-        }
+        const extracted = await Promise.race([extractPromise, timeoutPromise]);
 
-        const data = await response.json();
-        const extracted = data.data?.extract || {};
-
-        // Parse price
-        let priceNumber: number | null = null;
-        let currency = 'USD';
-        if (extracted.price) {
-          const cleaned = extracted.price.replace(/[₹$,\s]/g, '');
-          const parsed = parseFloat(cleaned);
-          priceNumber = isNaN(parsed) ? null : parsed;
-          currency = extracted.price.includes('₹') ? 'INR' : 'USD';
-        }
-
+        // Parse and store
+        const { number: priceNumber, currency } = parsePrice(extracted.price);
         const sourceDomain = extractDomain(url);
 
         const productData = {
@@ -102,7 +101,7 @@ export async function POST(request: NextRequest) {
           source_domain: sourceDomain,
           title: extracted.name || null,
           price_number: priceNumber,
-          currency,
+          currency: currency || 'USD',
           image_url: extracted.image || null,
           designer: extracted.brand || null,
           color: extracted.color || null,
@@ -113,6 +112,7 @@ export async function POST(request: NextRequest) {
           paste_count: 1,
         };
 
+        // Upsert product
         const { data: product, error: upsertError } = await supabase
           .from('products')
           .upsert(productData, { onConflict: 'url' })

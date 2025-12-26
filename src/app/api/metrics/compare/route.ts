@@ -18,18 +18,10 @@ export async function POST(request: NextRequest) {
 
     // Increment compare_count for all products
     for (const productId of productIds) {
-      const { data: product } = await supabase
+      await supabase
         .from('products')
-        .select('compare_count')
-        .eq('id', productId)
-        .single();
-
-      if (product) {
-        await supabase
-          .from('products')
-          .update({ compare_count: product.compare_count + 1 })
-          .eq('id', productId);
-      }
+        .update({ compare_count: supabase.raw('compare_count + 1') })
+        .eq('id', productId);
     }
 
     return NextResponse.json({ success: true });

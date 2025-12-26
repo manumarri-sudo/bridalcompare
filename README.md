@@ -148,5 +148,3 @@ For issues or questions, please open a GitHub issue.
 ## License
 
 MIT
-# bridalcompare
-

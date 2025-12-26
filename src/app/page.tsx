@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Sparkles, Heart, TrendingUp } from "lucide-react";
 import TrendingSection from "@/components/trending/TrendingSection";
+import Bookmarklet from "@/components/ui/Bookmarklet";
 
 export default function HomePage() {
   return (
@@ -22,6 +23,11 @@ export default function HomePage() {
             See What's Trending
           </Link>
         </div>
+      </section>
+
+      {/* Bookmarklet Section */}
+      <section className="max-w-2xl mx-auto">
+        <Bookmarklet />
       </section>
 
       {/* Features */}

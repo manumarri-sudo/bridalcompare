@@ -16,22 +16,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { productId } = SaveMetricsSchema.parse(body);
 
-    // Get current count
-    const { data: product } = await supabase
+    // Increment save_count
+    const { error } = await supabase
       .from('products')
-      .select('save_count')
-      .eq('id', productId)
-      .single();
+      .update({ save_count: supabase.raw('save_count + 1') })
+      .eq('id', productId);
 
-    if (product) {
-      // Increment save_count
-      const { error } = await supabase
-        .from('products')
-        .update({ save_count: product.save_count + 1 })
-        .eq('id', productId);
-
-      if (error) throw error;
-    }
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
