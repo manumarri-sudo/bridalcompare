@@ -1,9 +1,8 @@
 /**
  * Comprehensive domain mapping for South Asian bridal fashion sites
- * Maps common incorrect domains to correct ones and validates URLs
  */
 
-export const BRIDAL_DOMAINS = {
+export const BRIDAL_DOMAINS: Record<string, string> = {
   // Major Marketplaces
   'aza.com': 'azafashions.com',
   'azafashions.com': 'azafashions.com',
@@ -48,7 +47,7 @@ export const BRIDAL_DOMAINS = {
   'indianweddingbazaar.com': 'indianweddingbazaar.com',
   'www.indianweddingbazaar.com': 'indianweddingbazaar.com',
   
-  // Designer Direct Sites (Top 50)
+  // Top Designers
   'anitadongre.com': 'anitadongre.com',
   'www.anitadongre.com': 'anitadongre.com',
   
@@ -140,7 +139,6 @@ export const BRIDAL_DOMAINS = {
   'kumariyam.com': 'kumariyam.com',
   'www.kumariyam.com': 'kumariyam.com',
   
-  // International/UK Based
   'wellgroomed.co.uk': 'wellgroomed.co.uk',
   'www.wellgroomed.co.uk': 'wellgroomed.co.uk',
   
@@ -162,7 +160,6 @@ export const BRIDAL_DOMAINS = {
   'indianwedding.co.uk': 'indianwedding.co.uk',
   'www.indianwedding.co.uk': 'indianwedding.co.uk',
   
-  // More Designer Sites (50+)
   'chameeandpalak.com': 'chameeandpalak.com',
   'www.chameeandpalak.com': 'chameeandpalak.com',
   
@@ -280,7 +277,6 @@ export const BRIDAL_DOMAINS = {
   'myoho.in': 'myoho.in',
   'www.myoho.in': 'myoho.in',
   
-  // Menswear/Groom
   'raghavendra-rathore.com': 'raghavendra-rathore.com',
   'www.raghavendra-rathore.com': 'raghavendra-rathore.com',
   
@@ -290,7 +286,6 @@ export const BRIDAL_DOMAINS = {
   'manyavar.com': 'manyavar.com',
   'www.manyavar.com': 'manyavar.com',
   
-  // Jewelry & Accessories
   'tanishq.co.in': 'tanishq.co.in',
   'www.tanishq.co.in': 'tanishq.co.in',
   
@@ -318,7 +313,6 @@ export function fixBridalUrl(url: string): string {
     const parsedUrl = new URL(url);
     const correctDomain = getCorrectDomain(url);
     
-    // If domain needs correction, rebuild URL
     if (correctDomain !== parsedUrl.hostname) {
       parsedUrl.hostname = correctDomain;
       return parsedUrl.toString();
@@ -345,7 +339,6 @@ export function cleanProductUrl(url: string): string {
   try {
     const parsedUrl = new URL(url);
     
-    // Remove tracking parameters
     const trackingParams = [
       'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
       'fbclid', 'gclid', 'msclkid', '_ga', 'mc_cid', 'mc_eid',
