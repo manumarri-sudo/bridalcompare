@@ -1,105 +1,107 @@
 import Link from "next/link";
-import { Sparkles, Heart, TrendingUp, Chrome } from "lucide-react";
+import { Sparkles, TrendingUp, Chrome, Heart, Shield } from "lucide-react";
 import TrendingSection from "@/components/trending/TrendingSection";
 
 export default function HomePage() {
   return (
-    <div className="bridal-container py-12 space-y-16">
-      {/* Hero Section */}
-      <section className="text-center space-y-6 py-12">
-        <h1 className="text-5xl md:text-6xl font-serif text-bridal-charcoal">
-          Your Bridal Shopping,
-          <span className="block text-bridal-gold">Simplified</span>
+    <div className="vara-container">
+      <section className="text-center py-20 md:py-32 space-y-8">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-vara-gold/10 rounded-full text-vara-gold text-sm font-medium border border-vara-gold/20">
+          <Sparkles className="w-4 h-4" />
+          <span>Wedding Intelligence Engine</span>
+        </div>
+        
+        <h1 className="font-serif text-vara-primary max-w-4xl mx-auto">
+          Your Sherpa for
+          <span className="block mt-2">South Asian Weddings</span>
         </h1>
-        <p className="text-xl text-bridal-charcoal/70 max-w-2xl mx-auto">
-          Compare outfits from Aza, Kynah, Lashkaraa, Pernia's Pop-Up and 20+ more sites in one beautiful place.
+        
+        <p className="text-xl text-vara-muted max-w-2xl mx-auto leading-relaxed">
+          Compare outfits across 100+ designers. Get cultural guidance. Never miss a price drop.
+          <span className="block mt-2">For brides who need organization. For guests who need translation.</span>
         </p>
-        <div className="flex gap-4 justify-center pt-4">
-          <Link href="/compare" className="bridal-btn-primary">
+        
+        <div className="flex gap-4 justify-center pt-6 flex-wrap">
+          <Link href="/compare" className="vara-btn-primary">
             Start Comparing
           </Link>
-          <Link href="/trending" className="bridal-btn-secondary">
+          <Link href="/trending" className="vara-btn-secondary">
+            <TrendingUp className="w-4 h-4 inline mr-2" />
             See What's Trending
           </Link>
         </div>
       </section>
 
-      {/* Chrome Extension Section */}
-      <section className="max-w-2xl mx-auto">
-        <div className="bridal-card p-8 space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-bridal-gold/10 rounded-full flex items-center justify-center">
-              <Chrome className="w-7 h-7 text-bridal-gold" />
+      <section className="grid md:grid-cols-3 gap-8 py-16">
+        <div className="vara-card-flat p-8 space-y-4">
+          <div className="w-12 h-12 bg-vara-gold/10 rounded-full flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-vara-gold" />
+          </div>
+          <h3 className="font-serif text-vara-primary">Joyful Clarity</h3>
+          <p className="text-vara-muted leading-relaxed">
+            No spinning loaders. No error codes. Just calm, beautiful organization while we curate your collection.
+          </p>
+        </div>
+
+        <div className="vara-card-flat p-8 space-y-4">
+          <div className="w-12 h-12 bg-vara-primary/10 rounded-full flex items-center justify-center">
+            <Shield className="w-6 h-6 text-vara-primary" />
+          </div>
+          <h3 className="font-serif text-vara-primary">Cultural Safety</h3>
+          <p className="text-vara-muted leading-relaxed">
+            Not sure if red is okay for a guest? We'll gently guide you with cultural context for every event.
+          </p>
+        </div>
+
+        <div className="vara-card-flat p-8 space-y-4">
+          <div className="w-12 h-12 bg-vara-gold/10 rounded-full flex items-center justify-center">
+            <Heart className="w-6 h-6 text-vara-gold" />
+          </div>
+          <h3 className="font-serif text-vara-primary">Smart Collections</h3>
+          <p className="text-vara-muted leading-relaxed">
+            Tell us your wedding culture mix. We'll create the perfect folder structure automatically.
+          </p>
+        </div>
+      </section>
+
+      <section className="max-w-3xl mx-auto py-16">
+        <div className="vara-card p-10 space-y-6">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 bg-vara-primary/5 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <Chrome className="w-8 h-8 text-vara-primary" />
             </div>
             <div>
-              <h3 className="text-xl font-serif text-bridal-charcoal">Chrome Extension Available!</h3>
-              <p className="text-sm text-bridal-charcoal/60">Save products with one click while shopping</p>
+              <h3 className="font-serif text-2xl text-vara-primary mb-2">Save While You Shop</h3>
+              <p className="text-vara-muted leading-relaxed">
+                One click to save from any designer site. Works with Aza, Kynah, Pernia's, and 100+ more.
+              </p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <p className="text-bridal-charcoal/70">
-              Install our Chrome extension to instantly save products from any bridal site:
-            </p>
-
-            <div className="bg-bridal-gold-light p-4 rounded-lg space-y-3">
-              <p className="font-medium text-bridal-charcoal">How to Install:</p>
-              <ol className="list-decimal list-inside space-y-2 text-sm text-bridal-charcoal/70 ml-2">
-                <li>Download the BridalCompare Chrome Extension</li>
-                <li>Go to <code className="bg-white px-2 py-1 rounded">chrome://extensions/</code></li>
-                <li>Enable "Developer mode" (top right)</li>
-                <li>Click "Load unpacked" and select the extension folder</li>
-                <li>Start shopping - click the extension icon to save products!</li>
-              </ol>
-            </div>
-
-            <a 
-              href="https://github.com/manumarri-sudo/bridalcompare/releases" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bridal-btn-primary inline-block text-center"
-            >
-              Download Chrome Extension
-            </a>
-          </div>
+          <a 
+            href="https://github.com/manumarri-sudo/bridalcompare/releases" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="vara-btn-primary inline-block text-center w-full"
+          >
+            Download Extension
+          </a>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="grid md:grid-cols-3 gap-8">
-        <div className="bridal-card p-8 text-center space-y-4">
-          <div className="w-12 h-12 mx-auto bg-bridal-gold/10 rounded-full flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-bridal-gold" />
-          </div>
-          <h3 className="text-xl font-serif">Paste & Compare</h3>
-          <p className="text-bridal-charcoal/70">
-            Paste product URLs from any bridal site. We'll extract details and show them side-by-side.
-          </p>
-        </div>
-
-        <div className="bridal-card p-8 text-center space-y-4">
-          <div className="w-12 h-12 mx-auto bg-bridal-rose/30 rounded-full flex items-center justify-center">
-            <Heart className="w-6 h-6 text-red-400" />
-          </div>
-          <h3 className="text-xl font-serif">Save to Collections</h3>
-          <p className="text-bridal-charcoal/70">
-            Organize your favorites by event: Wedding, Sangeet, Mehendi, Reception, and more.
-          </p>
-        </div>
-
-        <div className="bridal-card p-8 text-center space-y-4">
-          <div className="w-12 h-12 mx-auto bg-bridal-gold-light rounded-full flex items-center justify-center">
-            <TrendingUp className="w-6 h-6 text-bridal-gold" />
-          </div>
-          <h3 className="text-xl font-serif">Discover Trends</h3>
-          <p className="text-bridal-charcoal/70">
-            See what other brides are loving. Real data, real trends, real inspiration.
-          </p>
-        </div>
+      <section className="py-16">
+        <TrendingSection />
       </section>
 
-      {/* Trending Section */}
-      <TrendingSection />
+      <section className="text-center py-20 space-y-6">
+        <h2 className="font-serif text-vara-primary">Ready to organize your wedding wardrobe?</h2>
+        <p className="text-vara-muted max-w-xl mx-auto">
+          Join brides and guests who've stopped juggling browser tabs and started making confident decisions.
+        </p>
+        <Link href="/compare" className="vara-btn-gold inline-block">
+          Start Your First Collection
+        </Link>
+      </section>
     </div>
   );
 }

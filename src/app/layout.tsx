@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: '--font-inter',
+});
+
+const playfair = Playfair_Display({ 
+  subsets: ["latin"],
+  variable: '--font-playfair',
+  weight: ['400', '600', '700'],
+});
 
 export const metadata: Metadata = {
-  title: "BridalCompare - Compare South Asian Bridal Outfits",
-  description: "Compare bridal lehengas, sarees, and outfits across 20+ South Asian fashion marketplaces. Save to collections and discover trending styles.",
+  title: "VARA - Your Wedding Intelligence Engine",
+  description: "Compare wedding outfits across 100+ designers. Smart collections, cultural guidance, and price tracking for South Asian weddings.",
+  keywords: "wedding outfits, lehenga comparison, South Asian wedding, bridal fashion, wedding shopping",
 };
 
 export default function RootLayout({
@@ -14,15 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <body className="font-sans">
+        <Header />
+        <main className="min-h-screen">
+          {children}
+        </main>
       </body>
     </html>
   );

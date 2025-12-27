@@ -9,21 +9,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bridal: {
-          cream: '#FFF8F0',
-          rose: '#FFE5E5',
-          gold: '#D4AF37',
-          'gold-light': '#F5E6D3',
-          mauve: '#E8D5D5',
-          charcoal: '#2C2C2C',
+        vara: {
+          base: '#FDFCF8',
+          primary: '#1C1917',
+          muted: '#78716C',
+          border: '#E7E5E4',
+          gold: '#A16207',
+          error: '#BE123C',
         },
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
-        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
   },
   plugins: [],
 };
+
 export default config;
