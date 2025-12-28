@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Space_Grotesk, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 
-const inter = Inter({ 
+const spaceGrotesk = Space_Grotesk({ 
   subsets: ["latin"],
-  variable: '--font-inter',
+  variable: '--font-space',
 });
 
-const playfair = Playfair_Display({ 
+const cormorant = Cormorant_Garamond({ 
   subsets: ["latin"],
-  variable: '--font-playfair',
-  weight: ['400', '600', '700'],
+  variable: '--font-cormorant',
+  weight: ['400', '600'],
+  style: ['normal', 'italic'],
 });
 
 export const metadata: Metadata = {
-  title: "VARA - Your Wedding Intelligence Engine",
-  description: "Compare wedding outfits across 100+ designers. Smart collections, cultural guidance, and price tracking for South Asian weddings.",
-  keywords: "wedding outfits, lehenga comparison, South Asian wedding, bridal fashion, wedding shopping",
+  title: "VARA - Fashion Intelligence Engine",
+  description: "Digital Couture for South Asian Weddings",
 };
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${cormorant.variable}`}>
       <body className="font-sans">
         <Header />
         <main className="min-h-screen">

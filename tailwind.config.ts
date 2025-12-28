@@ -10,17 +10,16 @@ const config: Config = {
     extend: {
       colors: {
         vara: {
-          base: '#FDFCF8',
-          primary: '#1C1917',
-          muted: '#78716C',
-          border: '#E7E5E4',
-          gold: '#A16207',
-          error: '#BE123C',
+          midnight: '#0c0a09',
+          emerald: '#064e3b',
+          champagne: '#FDE68A',
+          gold: '#D97706',
+          border: 'rgba(253, 230, 138, 0.1)',
         },
       },
       fontFamily: {
-        serif: ['Playfair Display', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
       },
     },
   },
