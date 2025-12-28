@@ -4,24 +4,32 @@
 
 @layer base {
   body {
-    @apply bg-vara-midnight text-vara-champagne;
-    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    @apply bg-vara-cream text-gray-900 font-body antialiased;
   }
   
   h1, h2, h3 {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-style: italic;
+    @apply font-display font-semibold;
   }
 }
 
 @layer components {
-  .vara-btn-primary {
-    @apply px-6 py-3 bg-vara-emerald text-vara-champagne rounded-lg font-medium 
-           hover:bg-opacity-90 transition-all shadow-lg;
+  .vara-btn {
+    @apply px-8 py-4 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95;
   }
   
-  .vara-glass-card {
-    @apply bg-vara-midnight/40 border border-vara-border rounded-2xl p-8;
-    backdrop-filter: blur(12px);
+  .vara-btn-primary {
+    @apply vara-btn bg-gradient-to-r from-vara-rose to-vara-marigold text-white hover:opacity-90;
+  }
+  
+  .vara-btn-secondary {
+    @apply vara-btn bg-white text-gray-900 border-2 border-gray-200 hover:border-vara-marigold;
+  }
+  
+  .vara-card {
+    @apply bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden;
+  }
+  
+  .vara-gradient-text {
+    @apply bg-gradient-to-r from-vara-rose to-vara-marigold bg-clip-text text-transparent;
   }
 }
