@@ -1,132 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import URLInput from "@/components/compare/URLInput";
-import ProductGrid from "@/components/compare/ProductGrid";
-import CompareTable from "@/components/compare/CompareTable";
-import SideBySideCompare from "@/components/compare/SideBySideCompare";
-import AdSlot from "@/components/layout/AdSlot";
-import { Product } from "@/types";
-import { LayoutGrid, Table } from "lucide-react";
+import { Plus, X, Sparkles } from "lucide-react";
 
 export default function ComparePage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  const [showSideBySide, setShowSideBySide] = useState(false);
+  const [urls, setUrls] = useState<string[]>([""]);
 
-  const handleProductsExtracted = (newProducts: Product[]) => {
-    setProducts(newProducts);
-  };
-
-  const handleToggleSelect = (product: Product) => {
-    setSelectedProducts(prev => {
-      const isSelected = prev.some(p => p.id === product.id);
-      if (isSelected) {
-        return prev.filter(p => p.id !== product.id);
-      } else {
-        if (prev.length >= 6) {
-          alert("You can compare up to 6 items at once");
-          return prev;
-        }
-        return [...prev, product];
-      }
-    });
-  };
-
-  const handleCompare = () => {
-    if (selectedProducts.length < 2) {
-      alert("Please select at least 2 items to compare");
-      return;
+  const addUrl = () => {
+    if (urls.length < 20) {
+      setUrls([...urls, ""]);
     }
-    setShowSideBySide(true);
+  };
+
+  const removeUrl = (index: number) => {
+    setUrls(urls.filter((_, i) => i !== index));
+  };
+
+  const updateUrl = (index: number, value: string) => {
+    const newUrls = [...urls];
+    newUrls[index] = value;
+    setUrls(newUrls);
   };
 
   return (
-    <div className="bridal-container py-8">
-      <div className="lg:grid lg:grid-cols-[1fr_300px] lg:gap-8">
-        {/* Main Content */}
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-serif text-bridal-charcoal">Compare Outfits</h1>
-            <p className="text-bridal-charcoal/70">
-              Paste product URLs from your favorite bridal sites and compare them side-by-side
-            </p>
-          </div>
-
-          {/* URL Input */}
-          <URLInput onProductsExtracted={handleProductsExtracted} />
-
-          {/* Results */}
-          {products.length > 0 && (
-            <div className="space-y-4">
-              {/* View Toggle & Compare Button */}
-              <div className="flex justify-between items-center">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg transition-colors ${
-                      viewMode === 'grid'
-                        ? 'bg-bridal-gold text-white'
-                        : 'bg-white border border-bridal-mauve/30 text-bridal-charcoal hover:bg-bridal-gold/5'
-                    }`}
-                  >
-                    <LayoutGrid className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('table')}
-                    className={`p-2 rounded-lg transition-colors ${
-                      viewMode === 'table'
-                        ? 'bg-bridal-gold text-white'
-                        : 'bg-white border border-bridal-mauve/30 text-bridal-charcoal hover:bg-bridal-gold/5'
-                    }`}
-                  >
-                    <Table className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {selectedProducts.length > 0 && (
-                  <button
-                    onClick={handleCompare}
-                    className="bridal-btn-primary"
-                  >
-                    Compare Selected ({selectedProducts.length})
-                  </button>
-                )}
-              </div>
-
-              {/* Products Display */}
-              {viewMode === 'grid' ? (
-                <ProductGrid
-                  products={products}
-                  selectedProducts={selectedProducts}
-                  onToggleSelect={handleToggleSelect}
-                />
-              ) : (
-                <CompareTable
-                  products={products}
-                  selectedProducts={selectedProducts}
-                  onToggleSelect={handleToggleSelect}
-                />
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Sidebar - Desktop Only */}
-        <aside className="hidden lg:block space-y-6">
-          <AdSlot type="sidebar" />
-        </aside>
+    <div className="min-h-screen max-w-4xl mx-auto px-4 py-20">
+      <div className="text-center mb-12">
+        <h1 className="text-5xl font-display mb-4">Compare Outfits</h1>
+        <p className="text-vara-warmGray text-lg">
+          Paste product URLs from your favorite designers and compare them side-by-side
+        </p>
       </div>
 
-      {/* Side-by-Side Modal */}
-      {showSideBySide && (
-        <SideBySideCompare
-          products={selectedProducts}
-          onClose={() => setShowSideBySide(false)}
-        />
-      )}
+      <div className="space-y-3 mb-8">
+        {urls.map((url, index) => (
+          <div
+            key={index}
+            className="group relative"
+          >
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => updateUrl(index, e.target.value)}
+              placeholder="https://www.azafashions.com/..."
+              className="w-full px-6 py-4 pr-12 rounded-2xl border-2 border-gray-200 focus:border-vara-marigold focus:outline-none transition-all bg-white text-gray-900 placeholder-gray-400"
+            />
+            {urls.length > 1 && (
+              <button
+                onClick={() => removeUrl(index)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="w-5 h-5 text-gray-400 hover:text-vara-deepRose" />
+              </button>
+            )}
+          </div>
+        ))}
+
+        {urls.length < 20 && (
+          <button
+            onClick={addUrl}
+            className="w-full py-4 border-2 border-dashed border-gray-300 rounded-2xl hover:border-vara-marigold hover:bg-vara-marigold/5 transition-all flex items-center justify-center gap-2 text-vara-warmGray hover:text-vara-marigold"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">Add another URL</span>
+          </button>
+        )}
+      </div>
+
+      <div className="text-center">
+        <button className="vara-btn-primary inline-flex items-center gap-2">
+          <Sparkles className="w-5 h-5" />
+          Extract & Compare
+        </button>
+      </div>
     </div>
   );
 }
