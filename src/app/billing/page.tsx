@@ -42,6 +42,9 @@ export default function BillingPage() {
     )
   }
 
+  const usageCount = profile?.usage_count || 0
+  const usagePercent = Math.min((usageCount / 50) * 100, 100)
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -63,14 +66,12 @@ export default function BillingPage() {
             <div className="mb-6">
               <div className="flex justify-between mb-2">
                 <span className="text-gray-700">Saved outfits</span>
-                <span className="font-semibold">
-                  {profile?.usage_count || 0} / 50
-                </span>
+                <span className="font-semibold">{usageCount} / 50</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-gradient-to-r from-pink-500 to-orange-500 h-2 rounded-full"
-                  style={{ width: \`\${Math.min(((profile?.usage_count || 0) / 50) * 100, 100)}%\` }}
+                  style={{ width: usagePercent + '%' }}
                 />
               </div>
             </div>
