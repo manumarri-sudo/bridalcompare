@@ -12,11 +12,13 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
+  const origin = requestUrl.origin
+
   if (returnUrl && shouldSave) {
-    return NextResponse.redirect(`${requestUrl.origin}/collections?save=${encodeURIComponent(returnUrl)}`)
+    return NextResponse.redirect(`${origin}/collections?save=${encodeURIComponent(returnUrl)}`)
   } else if (returnUrl) {
     return NextResponse.redirect(returnUrl)
   } else {
-    return NextResponse.redirect(`${requestUrl.origin}/collections`)
+    return NextResponse.redirect(`${origin}/collections`)
   }
 }
