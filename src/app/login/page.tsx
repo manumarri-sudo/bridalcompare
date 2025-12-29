@@ -1,81 +1,124 @@
-"use client";
-import { useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { createClient } from "@/lib/supabase-client"
+import Link from "next/link"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const supabase = createClientComponentClient();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = createClient()
+
+  useEffect(() => {
+    checkSession()
+  }, [])
+
+  const checkSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      handleRedirect()
+    }
+  }
+
+  const handleRedirect = () => {
+    const returnUrl = searchParams.get("return")
+    const shouldSave = searchParams.get("save") === "true"
+    
+    if (returnUrl && shouldSave) {
+      router.push(`/collections?save=${encodeURIComponent(returnUrl)}`)
+    } else if (returnUrl) {
+      router.push(returnUrl)
+    } else {
+      router.push("/collections")
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+    e.preventDefault()
+    setLoading(true)
+    setError("")
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      
-      const returnUrl = searchParams.get("return");
-      const shouldSave = searchParams.get("save") === "true";
-      
-      if (returnUrl && shouldSave) {
-        router.push(`/collections?save=${encodeURIComponent(returnUrl)}`);
-      } else if (returnUrl) {
-        router.push(returnUrl);
-      } else {
-        router.push("/collections");
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) throw error
+      handleRedirect()
     } catch (err: any) {
-      setError(err.message || "Failed to log in");
+      setError(err.message || "Failed to log in")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="vara-card max-w-md w-full p-12">
-        <h1 className="text-3xl font-display mb-8 text-center">Log in to Vara</h1>
-        
-        {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6">{error}</div>}
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-orange-50 to-pink-50">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
+        <div className="text-center mb-8">
+          <div className="text-5xl mb-4">♥</div>
+          <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
+          <p className="text-gray-600">Log in to Vara</p>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-vara-marigold focus:outline-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              placeholder="you@example.com"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium mb-2">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-vara-marigold focus:outline-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              placeholder="••••••••"
             />
           </div>
-          <button type="submit" disabled={loading} className="w-full vara-btn-primary">
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white font-semibold py-3 px-4 rounded-lg hover:from-pink-600 hover:to-orange-600 transition-all disabled:opacity-50"
+          >
             {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-600 mt-6">
-          Don't have an account? <Link href="/signup" className="text-vara-rose font-medium">Sign up</Link>
+          Don't have an account?{" "}
+          <Link href="/signup" className="text-orange-600 hover:text-orange-700 font-medium">
+            Sign up
+          </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }
