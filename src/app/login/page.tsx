@@ -26,7 +26,7 @@ export default function LoginPage() {
       const shouldSave = searchParams.get("save") === "true";
       
       if (returnUrl && shouldSave) {
-        router.push(\`/collections?save=\${encodeURIComponent(returnUrl)}\`);
+        router.push(`/collections?save=${encodeURIComponent(returnUrl)}`);
       } else if (returnUrl) {
         router.push(returnUrl);
       } else {
