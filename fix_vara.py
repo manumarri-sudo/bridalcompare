@@ -1,5 +1,6 @@
 import os
 import subprocess
+import base64
 
 # --- 1. SETUP EXTENSION FILES ---
 print("🌸 Starting Vara Makeover...")
@@ -7,6 +8,16 @@ print("🌸 Starting Vara Makeover...")
 # Create extension directory
 if not os.path.exists("extension"):
     os.makedirs("extension")
+
+# --- 1b. CREATE PLACEHOLDER ICONS (Fixes the loading error) ---
+print("🎨 Creating placeholder icons so Chrome loads...")
+# This is a tiny transparent PNG to satisfy Chrome that the files exist.
+# You can replace these files in the 'extension' folder with your actual icons later.
+placeholder_icon = base64.b64decode(b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=')
+
+with open("extension/icon16.png", "wb") as f: f.write(placeholder_icon)
+with open("extension/icon48.png", "wb") as f: f.write(placeholder_icon)
+with open("extension/icon128.png", "wb") as f: f.write(placeholder_icon)
 
 # Manifest
 manifest_content = """{
@@ -228,15 +239,13 @@ with open("src/app/login/page.tsx", "w") as f:
 # --- 3. GIT PUSH ---
 print("🚀 Pushing to GitHub...")
 try:
+    # Add all files, including the new placeholder icons
     subprocess.run(["git", "add", "."], check=True)
-    subprocess.run(["git", "commit", "-m", "Vara Upgrade: New Extension + Login Fixes"], check=True)
+    subprocess.run(["git", "commit", "-m", "Vara Upgrade: Extension Icons & Login Fix"], check=True)
     subprocess.run(["git", "push", "origin", "main"], check=True)
     print("✅ SUCCESS! Website is updating.")
 except subprocess.CalledProcessError as e:
     print(f"❌ Git Error: {e}")
 
-print("\n⚠️ IMPORTANT FINAL STEP:")
-print("1. Go to chrome://extensions in your browser.")
-print("2. Remove the old Vara extension.")
-print("3. Click 'Load Unpacked'.")
-print("4. Select the 'extension' folder inside 'bridalcomparev2'.")
+print("\n⚠️ FINAL STEP:")
+print("Go to chrome://extensions and Load Unpacked again. It should work now!")
