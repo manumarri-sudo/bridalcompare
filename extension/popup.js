@@ -1,81 +1,96 @@
-
-const BASE = 'https://www.vara.style';
-
-// UI Elements
-const ui = {
-  loading: document.getElementById('view-loading'),
-  login: document.getElementById('view-login'),
-  save: document.getElementById('view-save'),
-  msg: document.getElementById('status-msg'),
-  saveBtn: document.getElementById('btn-save')
-};
-
-function show(view) {
-  if (ui.loading) ui.loading.classList.add('hidden');
-  if (ui.login) ui.login.classList.add('hidden');
-  if (ui.save) ui.save.classList.add('hidden');
-  if (view) view.classList.remove('hidden');
-}
-
-function feedback(text, type='neutral') {
-  if (!ui.msg) return;
-  ui.msg.classList.remove('hidden');
-  // Dynamic color for success/error
-  const color = type === 'error' ? '#EF4444' : '#10B981';
-  ui.msg.innerHTML = `<div class="status-box" style="color:${color}; font-weight:600;">${text}</div>`;
-}
+const BASE_URL = 'https://www.vara.style';
 
 async function checkAuth() {
   try {
-    const res = await fetch(`${BASE}/api/auth/session`);
-    if (res.status === 404) {
-      show(ui.login);
-      return;
-    }
-    const data = await res.json();
-    if (data.authenticated) {
-      show(ui.save);
-    } else {
-      show(ui.login);
-    }
-  } catch (e) {
-    show(ui.login);
+    const response = await fetch(`${BASE_URL}/api/auth/session`, { credentials: 'include' });
+    const data = await response.json();
+    return data.authenticated;
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    return false;
   }
 }
 
-// Helper for safe listeners
-function addListener(id, url) {
-  const el = document.getElementById(id);
-  if (el) el.onclick = () => chrome.tabs.create({ url: url });
-}
-
-addListener('btn-login', `${BASE}/login`);
-addListener('btn-signup', `${BASE}/signup`);
-addListener('btn-dashboard', `${BASE}/collections`);
-
-if (ui.saveBtn) {
-  ui.saveBtn.onclick = async () => {
-    ui.saveBtn.innerText = "Saving...";
-    ui.saveBtn.disabled = true;
-    
-    chrome.tabs.query({active:true, currentWindow:true}, tabs => {
-      const tab = tabs[0];
-      const payload = { url: tab.url };
-
-      chrome.runtime.sendMessage({action: 'save', data: payload}, res => {
-        ui.saveBtn.innerText = "♡ Save to My Collection";
-        ui.saveBtn.disabled = false;
-
-        if(res && res.success) {
-          feedback("Safely stored in your wardrobe! 💖", 'success');
-          setTimeout(() => window.close(), 2000);
-        } else {
-          feedback("Oops! We couldn't save that. Try again?", 'error');
-        }
-      });
+async function getCurrentUrl() {
+  return new Promise((resolve) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      resolve(tabs[0].url);
     });
-  };
+  });
 }
 
-// Start
-checkAuth();
+function showStatus(message, type) {
+  const status = document.getElementById('status');
+  status.textContent = message;
+  status.className = `status ${type}`;
+  status.classList.remove('hidden');
+  if (type === 'success' || type === 'error') {
+    setTimeout(() => status.classList.add('hidden'), 3000);
+  }
+}
+
+async function init() {
+  const authCheck = document.getElementById('auth-check');
+  const notLoggedIn = document.getElementById('not-logged-in');
+  const loggedIn = document.getElementById('logged-in');
+  authCheck.classList.remove('hidden');
+  const isAuthenticated = await checkAuth();
+  authCheck.classList.add('hidden');
+  if (isAuthenticated) {
+    loggedIn.classList.remove('hidden');
+  } else {
+    notLoggedIn.classList.remove('hidden');
+  }
+}
+
+document.getElementById('login-btn')?.addEventListener('click', async () => {
+  chrome.tabs.create({ url: `${BASE_URL}/login` });
+  window.close();
+});
+
+document.getElementById('signup-btn')?.addEventListener('click', async () => {
+  chrome.tabs.create({ url: `${BASE_URL}/signup` });
+  window.close();
+});
+
+document.getElementById('save-btn')?.addEventListener('click', async () => {
+  showStatus('Saving...', 'loading');
+  try {
+    const currentUrl = await getCurrentUrl();
+    const response = await chrome.runtime.sendMessage({ action: 'saveProduct', url: currentUrl });
+    
+    console.log('Response:', response);
+    
+    if (response.success) {
+      if (response.alreadySaved) {
+        showStatus('✓ Already in your collection!', 'success');
+      } else {
+        const product = response.product;
+        showStatus(`✓ Saved: ${product.title}`, 'success');
+        chrome.notifications.create({
+          type: 'basic',
+          iconUrl: 'icons/icon128.png',
+          title: 'Saved to Vara!',
+          message: `${product.designer} - ₹${product.price_number || 'Price N/A'}`
+        });
+      }
+    } else if (response.error === 'LIMIT_REACHED') {
+      showStatus('Limit reached! Upgrade', 'error');
+      setTimeout(() => {
+        chrome.tabs.create({ url: `${BASE_URL}/billing` });
+      }, 1500);
+    } else {
+      showStatus(response.error || 'Failed to save', 'error');
+    }
+  } catch (error) {
+    console.error('Save failed:', error);
+    showStatus('Error: ' + error.message, 'error');
+  }
+});
+
+document.getElementById('view-btn')?.addEventListener('click', () => {
+  chrome.tabs.create({ url: `${BASE_URL}/collections/inbox` });
+  window.close();
+});
+
+init();
