@@ -2,13 +2,14 @@
 import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
-import { getSmartIcon } from '@/lib/constants'
+import { EVENT_LABELS, getSmartIcon } from '@/lib/constants'
 import CreateCollectionModal from '@/components/CreateCollectionModal'
 import ConfirmModal from '@/components/ConfirmModal'
-import { Trash2, CheckSquare, Square } from 'lucide-react'
+import { Trash2, CheckSquare, Square, Inbox } from 'lucide-react'
 
 export default function Collections() {
   const [collections, setCollections] = useState<any[]>([])
+  const [inboxCount, setInboxCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSelectMode, setIsSelectMode] = useState(false)
@@ -21,11 +22,20 @@ export default function Collections() {
   )
 
   const fetchCollections = async () => {
-    const { data } = await supabase
+    // 1. Fetch Named Collections
+    const { data: cols } = await supabase
       .from('collections')
       .select('*, saved_items(count)')
       .order('created_at', { ascending: true })
-    if (data) setCollections(data)
+    
+    // 2. Fetch Inbox Count (Items with NO collection)
+    const { count } = await supabase
+      .from('saved_items')
+      .select('*', { count: 'exact', head: true })
+      .is('collection_id', null)
+
+    if (cols) setCollections(cols)
+    setInboxCount(count || 0)
     setLoading(false)
   }
 
@@ -52,7 +62,7 @@ export default function Collections() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-serif text-[#FB7185] mb-2">My Wardrobe</h1>
-            <p className="text-gray-500">Create collections for every event in your life.</p>
+            <p className="text-gray-500">Organize your looks by event.</p>
           </div>
           
           <div className="flex gap-3">
@@ -77,8 +87,22 @@ export default function Collections() {
           </div>
         </div>
         
-        {!loading && collections.length > 0 && (
+        {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* --- THE INBOX CARD (Captures Extension Saves) --- */}
+            <Link href="/collections/inbox" className="group bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 cursor-pointer ring-2 ring-[#FB7185] ring-opacity-10">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-4xl text-[#FB7185]">📥</span>
+                <span className="bg-pink-50 text-[#FB7185] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                  {inboxCount} Items
+                </span>
+              </div>
+              <h3 className="text-2xl font-serif font-bold text-gray-800 mb-2">Inbox / Unsorted</h3>
+              <p className="text-sm text-gray-400 font-medium">Items from Extension go here</p>
+            </Link>
+
+            {/* User Collections */}
             {collections.map((col) => (
               <div 
                 key={col.id} 
@@ -94,14 +118,13 @@ export default function Collections() {
                 )}
 
                 <div className="flex justify-between items-start mb-4">
-                  {/* SMART ICON: Derived from Title */}
-                  <span className="text-4xl">{getSmartIcon(col.title)}</span>
+                  <span className="text-4xl">{getSmartIcon ? getSmartIcon(col.title) : '📁'}</span>
                   <span className="bg-pink-50 text-[#FB7185] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
                     {col.saved_items?.[0]?.count || 0} Items
                   </span>
                 </div>
                 <h3 className="text-2xl font-serif font-bold text-gray-800 mb-2 truncate">{col.title}</h3>
-                <p className="text-sm text-gray-400 font-medium">Custom Collection</p>
+                <p className="text-sm text-gray-400 font-medium truncate">{col.event_context}</p>
               </div>
             ))}
           </div>
