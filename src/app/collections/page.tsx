@@ -9,12 +9,11 @@ export default function Collections() {
       <main className="max-w-7xl mx-auto px-6 md:px-12 py-12">
         <div className="flex items-end justify-between mb-12">
           <h1 className="text-4xl md:text-5xl font-serif text-[#FB7185]">My Collection</h1>
-          <Link href="/compare" className="hidden md:block text-gray-500 hover:text-[#FB7185] transition border-b border-transparent hover:border-[#FB7185]">
+          <Link href="/compare" className="hidden md:block text-gray-500 hover:text-[#FB7185] transition border-b border-transparent hover:border-[#FB7185] font-bold uppercase tracking-wide text-xs">
             + Add Link Manually
           </Link>
         </div>
         
-        {/* Empty State / Dashboard */}
         <div className="bg-white rounded-3xl p-16 text-center shadow-xl border border-gray-100 animate-fade-in-up">
           <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner">
             🛍️
@@ -33,7 +32,6 @@ export default function Collections() {
               Get Chrome Extension
             </a>
             
-            {/* --- THE FIX: Explicitly links to /compare --- */}
             <Link 
               href="/compare" 
               className="px-8 py-4 bg-white border border-gray-200 text-gray-600 rounded-full font-bold text-lg hover:border-[#FB7185] hover:text-[#FB7185] transition hover:-translate-y-1"

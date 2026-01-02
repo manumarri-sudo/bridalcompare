@@ -3,10 +3,12 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -18,13 +20,13 @@ function LoginForm() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError(error.message)
+      setError("We couldn't find an account with those details. Please try again.")
       setLoading(false)
     } else {
       router.push(returnUrl)
@@ -32,42 +34,55 @@ function LoginForm() {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${returnUrl}` },
-    })
-    if (error) setError(error.message)
-  }
-
   return (
-    <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-[#FB7185]">vara</h1>
-        <h2 className="mt-2 text-xl font-medium text-gray-600">Welcome Back</h2>
+    <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-xl border border-gray-100">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-serif font-bold text-[#FB7185] mb-2">vara</h1>
+        <p className="text-gray-500">Welcome back.</p>
       </div>
-      <button onClick={handleGoogleLogin} disabled={loading} className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
-        Continue with Google
-      </button>
-      <div className="relative"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-300"></div></div><div className="relative flex justify-center text-sm"><span className="bg-white px-2 text-gray-500">Or continue with email</span></div></div>
-      <form onSubmit={handleEmailLogin} className="space-y-4">
-        <input type="email" required placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-[#FB7185] focus:outline-none" />
-        <input type="password" required placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-[#FB7185] focus:outline-none" />
-        {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-        <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#FB7185] px-4 py-3 font-bold text-white hover:bg-[#F43F5E] disabled:opacity-50">{loading ? 'Sign In' : 'Sign In'}</button>
+
+      <form onSubmit={handleLogin} className="space-y-4">
+        <input 
+          type="email" 
+          required 
+          placeholder="Email Address" 
+          value={email}
+          className="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-[#FB7185] outline-none transition"
+          onChange={(e) => setEmail(e.target.value)} 
+        />
+        
+        <div className="relative">
+          <input 
+            type={showPassword ? "text" : "password"} 
+            required 
+            placeholder="Password" 
+            value={password}
+            className="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-[#FB7185] outline-none transition pr-10"
+            onChange={(e) => setPassword(e.target.value)} 
+          />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-4 text-gray-400 hover:text-gray-600">
+            {showPassword ? "🙈" : "👁️"}
+          </button>
+        </div>
+
+        {error && <div className="p-4 bg-red-50 text-red-500 rounded-xl text-sm font-medium">{error}</div>}
+
+        <button type="submit" disabled={loading} className="w-full py-4 bg-[#FB7185] text-white font-bold rounded-xl hover:bg-[#F43F5E] transition disabled:opacity-50 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+          {loading ? 'Logging In...' : 'Log In'}
+        </button>
       </form>
-      <p className="text-center text-sm text-gray-500">Don't have an account? <a href="/signup" className="font-medium text-[#FB7185] hover:underline">Sign up</a></p>
+
+      <div className="mt-8 text-center text-sm text-gray-500">
+        Don't have an account? <Link href="/signup" className="font-bold text-[#FB7185] hover:underline">Join</Link>
+      </div>
     </div>
   )
 }
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF8F0] p-4">
-      <Suspense fallback={<div>Loading...</div>}>
-        <LoginForm />
-      </Suspense>
+    <div className="min-h-screen flex items-center justify-center bg-[#FFF8F0] p-4">
+      <Suspense><LoginForm /></Suspense>
     </div>
   )
 }

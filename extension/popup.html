@@ -5,43 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vara Saver</title>
   <style>
-    body { width: 320px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #FFF8F0; color: #4A4A4A; }
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Lato:wght@400;700&display=swap');
+    
+    body { width: 320px; font-family: 'Lato', sans-serif; margin: 0; padding: 0; background-color: #FFF8F0; color: #4A4A4A; }
     .container { padding: 24px; text-align: center; }
     .hidden { display: none !important; }
     
-    /* Brand Header */
-    .brand-icon { width: 48px; height: 48px; margin: 0 auto 10px; background-image: url('icon-128.png'); background-size: cover; border-radius: 50%; }
-    h1 { font-family: "Garamond", serif; font-weight: 600; font-size: 32px; color: #FB7185; margin: 0; letter-spacing: -0.5px; }
+    h1 { font-family: "Playfair Display", serif; font-weight: 600; font-size: 32px; color: #FB7185; margin: 0; }
     p { font-size: 14px; line-height: 1.5; color: #888; margin-top: 8px; margin-bottom: 24px; }
     
-    /* Buttons */
-    .btn { display: block; width: 100%; padding: 14px; margin-bottom: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+    .btn { display: block; width: 100%; padding: 14px; margin-bottom: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
     .btn-primary { background: #FB7185; color: white; box-shadow: 0 4px 12px rgba(251, 113, 133, 0.3); }
     .btn-primary:hover { background: #F43F5E; transform: translateY(-1px); }
     .btn-secondary { background: white; color: #666; border: 1px solid #E5E5E5; }
-    .btn-secondary:hover { background: #FAFAFA; border-color: #D4D4D4; }
-
-    /* Status Messages */
-    .status-box { margin-top: 20px; padding: 15px; border-radius: 12px; background: white; font-size: 14px; }
+    
+    .status-box { margin-top: 20px; padding: 15px; border-radius: 12px; background: white; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .loader { width: 20px; height: 20px; border: 2px solid #FB7185; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-
   <div id="view-loading" class="container">
     <h1>vara</h1>
     <div class="status-box">
       <div class="loader"></div>
-      <p style="margin-bottom:0">Just a moment...</p>
+      <p style="margin-bottom:0">Checking your wardrobe...</p>
     </div>
   </div>
 
   <div id="view-login" class="container hidden">
     <h1>vara</h1>
     <p>Join us to start curating your dream collection.</p>
-    <button id="btn-login" class="btn btn-primary">Sign In</button>
-    <button id="btn-signup" class="btn btn-secondary">Create Account</button>
+    <button id="btn-login" class="btn btn-primary">Log In</button>
+    <button id="btn-signup" class="btn btn-secondary">Join</button>
   </div>
 
   <div id="view-save" class="container hidden">
@@ -51,7 +47,6 @@
     <button id="btn-dashboard" class="btn btn-secondary">Go to Dashboard</button>
     <div id="status-msg" class="hidden"></div>
   </div>
-
   <script src="popup.js"></script>
 </body>
 </html>
