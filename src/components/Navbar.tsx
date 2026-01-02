@@ -17,34 +17,35 @@ export default function Navbar() {
   )
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      updateUserInterface(session?.user ?? null)
-    })
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      updateUI(session?.user ?? null)
+    }
+    getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      updateUserInterface(session?.user ?? null)
+      updateUI(session?.user ?? null)
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  const updateUserInterface = (currentUser: User | null) => {
+  const updateUI = (currentUser: User | null) => {
     setUser(currentUser)
     setLoading(false)
     
     if (currentUser) {
       const meta = currentUser.user_metadata || {}
-      
-      // LOGIC: Name > Full Name > Email > fallback
-      if (meta.first_name && meta.first_name.trim() !== '') {
+      // STRICT LOGIC: If no first name, use Email username. NEVER use 'Friend'.
+      if (meta.first_name) {
         setDisplayName(meta.first_name)
-      } else if (meta.full_name && meta.full_name.trim() !== '') {
+      } else if (meta.full_name) {
         setDisplayName(meta.full_name.split(' ')[0])
       } else if (currentUser.email) {
-        // Fallback to email username if no name exists
-        setDisplayName(currentUser.email.split('@')[0])
+        // "manaswi@gmail.com" -> "Manaswi"
+        const emailName = currentUser.email.split('@')[0]
+        setDisplayName(emailName.charAt(0).toUpperCase() + emailName.slice(1))
       } else {
-        // Absolute last resort, but practically impossible if logged in
         setDisplayName('Stylist') 
       }
     }
@@ -57,33 +58,28 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="flex items-center justify-between px-6 md:px-12 py-6 bg-[#FFF8F0] sticky top-0 z-50 bg-opacity-95 backdrop-blur-sm border-b border-pink-50/50">
-      <Link href="/" className="text-3xl font-serif font-bold text-[#FB7185] tracking-tight hover:opacity-80 transition">vara</Link>
+    <nav className="flex items-center justify-between px-6 md:px-12 py-6 bg-[#FFF8F0]">
+      {/* Logo with Gradient Icon */}
+      <Link href="/" className="flex items-center gap-2 group">
+        <span className="text-2xl text-rose-400">♥</span>
+        <span className="text-3xl font-serif font-bold text-orange-400 group-hover:opacity-80 transition">Vara</span>
+      </Link>
       
-      <div className="flex items-center gap-4 md:gap-8">
-        <Link href="/collections" className="text-gray-600 hover:text-[#FB7185] transition text-sm font-bold tracking-wide uppercase">Collections</Link>
-        <Link href="/compare" className="text-gray-600 hover:text-[#FB7185] transition text-sm font-bold tracking-wide uppercase">Compare</Link>
+      <div className="flex items-center gap-8">
+        <Link href="/compare" className="text-gray-600 hover:text-orange-500 transition text-sm font-medium">Compare</Link>
+        <Link href="/about" className="text-gray-600 hover:text-orange-500 transition text-sm font-medium">About</Link>
         
         {loading ? (
-          <div className="w-24 h-8 bg-pink-100 rounded-full animate-pulse"></div>
+          <div className="w-24 h-10 bg-orange-100 rounded-full animate-pulse"></div>
         ) : user ? (
-          <div className="flex items-center gap-4 pl-4 border-l border-gray-200">
-            <div className="flex flex-col items-end">
-              <span className="text-sm font-bold text-gray-800 capitalize">Hi, {displayName}</span>
-            </div>
-            <button onClick={handleSignOut} className="text-xs font-medium text-gray-400 hover:text-[#FB7185] transition uppercase tracking-wide">
-              Sign Out
-            </button>
+          <div className="flex items-center gap-4">
+            <span className="text-gray-700 font-medium">Hi, {displayName}</span>
+            <button onClick={handleSignOut} className="text-sm text-gray-400 hover:text-rose-500">Sign Out</button>
           </div>
         ) : (
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-gray-600 hover:text-[#FB7185] text-sm font-bold transition uppercase tracking-wide">
-              Log In
-            </Link>
-            <Link href="/signup" className="px-6 py-2.5 bg-[#FB7185] text-white rounded-full text-sm font-bold hover:bg-[#F43F5E] transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-              Join
-            </Link>
-          </div>
+          <Link href="/login" className="px-8 py-3 bg-gradient-to-r from-rose-400 to-orange-400 text-white rounded-full font-bold text-sm hover:shadow-lg hover:-translate-y-0.5 transition duration-200">
+            Sign In
+          </Link>
         )}
       </div>
     </nav>
