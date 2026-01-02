@@ -27,8 +27,12 @@ export default function About() {
         </div>
         
         <div className="mt-16 pt-10 border-t border-gray-200">
-          <p className="text-gray-400 text-sm mb-2">WITH LOVE</p>
-          <a href="mailto:hello@vara.style" className="text-2xl font-serif font-bold text-[#FB7185] hover:text-[#F43F5E] transition">
+          <p className="text-gray-400 text-sm mb-2 uppercase tracking-widest">With Love</p>
+          {/* Email Fix: added explicit cursor-pointer and relative positioning to ensure clickability */}
+          <a 
+            href="mailto:hello@vara.style" 
+            className="text-3xl font-serif font-bold text-[#FB7185] hover:text-[#F43F5E] transition relative cursor-pointer z-10 block"
+          >
             hello@vara.style
           </a>
         </div>

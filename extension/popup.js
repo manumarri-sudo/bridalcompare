@@ -10,7 +10,6 @@ const ui = {
   saveBtn: document.getElementById('btn-save')
 };
 
-// Helper to switch views safely
 function show(view) {
   if (ui.loading) ui.loading.classList.add('hidden');
   if (ui.login) ui.login.classList.add('hidden');
@@ -21,18 +20,18 @@ function show(view) {
 function feedback(text, type='neutral') {
   if (!ui.msg) return;
   ui.msg.classList.remove('hidden');
-  ui.msg.innerHTML = `<div class="status-box" style="color:${type==='error'?'#EF4444':'#10B981'}">${text}</div>`;
+  // Dynamic color for success/error
+  const color = type === 'error' ? '#EF4444' : '#10B981';
+  ui.msg.innerHTML = `<div class="status-box" style="color:${color}; font-weight:600;">${text}</div>`;
 }
 
 async function checkAuth() {
   try {
     const res = await fetch(`${BASE}/api/auth/session`);
     if (res.status === 404) {
-      console.error("API Route not found");
       show(ui.login);
       return;
     }
-    
     const data = await res.json();
     if (data.authenticated) {
       show(ui.save);
@@ -40,25 +39,20 @@ async function checkAuth() {
       show(ui.login);
     }
   } catch (e) {
-    console.error("Auth Check Failed:", e);
     show(ui.login);
   }
 }
 
-// --- SAFE EVENT LISTENERS (The Fix for the Crash) ---
+// Helper for safe listeners
 function addListener(id, url) {
   const el = document.getElementById(id);
-  if (el) {
-    el.onclick = () => chrome.tabs.create({ url: url });
-  }
+  if (el) el.onclick = () => chrome.tabs.create({ url: url });
 }
 
-// Attach links safely
 addListener('btn-login', `${BASE}/login`);
 addListener('btn-signup', `${BASE}/signup`);
 addListener('btn-dashboard', `${BASE}/collections`);
 
-// Save Button Logic
 if (ui.saveBtn) {
   ui.saveBtn.onclick = async () => {
     ui.saveBtn.innerText = "Saving...";
@@ -69,19 +63,19 @@ if (ui.saveBtn) {
       const payload = { url: tab.url };
 
       chrome.runtime.sendMessage({action: 'save', data: payload}, res => {
-        ui.saveBtn.innerText = "♡ Save to Collection";
+        ui.saveBtn.innerText = "♡ Save to My Collection";
         ui.saveBtn.disabled = false;
 
         if(res && res.success) {
-          feedback("Saved to your wardrobe! ✨", 'success');
-          setTimeout(() => window.close(), 1500);
+          feedback("Safely stored in your wardrobe! 💖", 'success');
+          setTimeout(() => window.close(), 2000);
         } else {
-          feedback(res?.error || "Error saving. Please try again.", 'error');
+          feedback("Oops! We couldn't save that. Try again?", 'error');
         }
       });
     });
   };
 }
 
-// Start the check
+// Start
 checkAuth();
