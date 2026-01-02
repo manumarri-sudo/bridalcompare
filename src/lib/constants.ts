@@ -1,69 +1,16 @@
 
-export const EVENT_LABELS: Record<string, string> = {
-  // General
-  'wedding_pheras': 'Wedding Ceremony 💍',
-  'reception': 'Reception 🥂',
-  'sangeet': 'Sangeet / Dance 💃',
-  'haldi': 'Haldi 💛',
-  'mehendi': 'Mehendi 🌿',
-  'engagement': 'Engagement 💍',
-  'roka': 'Roka / Thaka 🤝',
+// This "Brain" helps us pick icons even for custom user names
+export function getSmartIcon(title: string): string {
+  const t = title.toLowerCase();
   
-  // South Indian
-  'pellikuthuru': 'Pellikuthuru (Telugu) 🌼',
-  'pellikoduku': 'Pellikoduku (Telugu) 🌼',
-  'snathakam': 'Snathakam 📜',
-  'kashi_yatra': 'Kashi Yatra ☂️',
-  'nalangu': 'Nalangu (Tamil) 🎲',
-  'nichayathartham': 'Nichayathartham (Tamil) 💍',
-  'oonjal': 'Oonjal / Swing 🌸',
-  'janavasam': 'Janavasam 🎺',
-  'muhurtham': 'Muhurtham 🪔',
+  if (t.includes('wedding') || t.includes('phera') || t.includes('muhurtham')) return '💍';
+  if (t.includes('haldi') || t.includes('pelli') || t.includes('holud')) return '🌼';
+  if (t.includes('mehendi') || t.includes('henna')) return '🌿';
+  if (t.includes('sangeet') || t.includes('dance') || t.includes('garba') || t.includes('jaggo')) return '💃';
+  if (t.includes('reception') || t.includes('party') || t.includes('cocktail')) return '🥂';
+  if (t.includes('trousseau') || t.includes('daily') || t.includes('work')) return '✨';
+  if (t.includes('vacation') || t.includes('trip') || t.includes('honeymoon')) return '✈️';
+  if (t.includes('jewel') || t.includes('gold')) return '💎';
   
-  // Gujarati
-  'garba': 'Garba / Raas 🥁',
-  'grah_shanti': 'Grah Shanti 🏡',
-  'mameru': 'Mameru / Mosalu 🎁',
-  'chandlo': 'Chandlo Matli 🔴',
-  
-  // Bengali
-  'gaye_holud': 'Gaye Holud (Bengali) 🟡',
-  'aiburobhat': 'Aiburobhat 🍚',
-  'bou_bhat': 'Bou Bhat 🍛',
-  
-  // Muslim
-  'nikkah': 'Nikkah 🕌',
-  'walima': 'Walima 🌙',
-  'manjha': 'Manjha 💛',
-  
-  // Sikh / Punjabi
-  'anand_karaj': 'Anand Karaj ⚔️',
-  'jaggo': 'Jaggo 🏮',
-  'chooda': 'Chooda / Kalire 🔴',
-  'maiian': 'Maiian 🟡',
-  
-  // Christian / Western
-  'church_wedding': 'Church Wedding ⛪',
-  'cocktail': 'Cocktail / Black Tie 🍸',
-  
-  // General
-  'trousseau': 'Trousseau / Daily ✨',
-  'guest_fit': 'Guest Outfit 👗',
-  'party': 'Party / Event 🎉',
-  'festival': 'Festival (Diwali/Eid) 🪔'
-};
-
-export const CATEGORY_LABELS: Record<string, string> = {
-  'lehenga': 'Lehenga',
-  'saree': 'Saree', 
-  'sherwani': 'Sherwani',
-  'gown': 'Gown',
-  'suit': 'Suit / Anarkali',
-  'kurta': 'Kurta Set',
-  'indo_western': 'Indo-Western',
-  'jewelry': 'Jewelry',
-  'accessories': 'Accessories',
-  'footwear': 'Footwear',
-  'dhoti': 'Dhoti / Veshti',
-  'half_saree': 'Half Saree / Langa Voni'
-};
+  return '📁'; // Default Folder Icon
+}

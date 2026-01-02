@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { EVENT_LABELS } from '@/lib/constants'
 
 export default function CreateCollectionModal({ isOpen, onClose, onCreated }: any) {
   const [title, setTitle] = useState('')
-  const [eventContext, setEventContext] = useState('wedding_pheras')
   const [loading, setLoading] = useState(false)
 
   const supabase = createBrowserClient(
@@ -20,9 +18,11 @@ export default function CreateCollectionModal({ isOpen, onClose, onCreated }: an
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
+    // We just save the title. We don't force an 'event_context' anymore.
+    // The frontend will figure out the icon dynamically.
     const { error } = await supabase.from('collections').insert({
       title,
-      event_context: eventContext,
+      event_context: 'custom', // Generic marker
       user_id: user.id,
       is_system_generated: false
     })
@@ -50,24 +50,12 @@ export default function CreateCollectionModal({ isOpen, onClose, onCreated }: an
             <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Collection Name</label>
             <input 
               required
-              placeholder="e.g. My Dream Pellikuthuru Look"
+              autoFocus
+              placeholder="e.g. Goa Bachelorette, Mom's Sarees..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#FB7185] outline-none transition"
+              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#FB7185] outline-none transition text-lg"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Event / Occasion</label>
-            <select 
-              value={eventContext}
-              onChange={(e) => setEventContext(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#FB7185] outline-none transition appearance-none"
-            >
-              {Object.entries(EVENT_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
           </div>
 
           <div className="flex gap-4 pt-2">
@@ -75,7 +63,7 @@ export default function CreateCollectionModal({ isOpen, onClose, onCreated }: an
               Cancel
             </button>
             <button type="submit" disabled={loading} className="flex-1 py-4 bg-[#FB7185] text-white font-bold rounded-xl hover:bg-[#F43F5E] transition disabled:opacity-50">
-              {loading ? 'Creating...' : 'Create Collection'}
+              {loading ? 'Creating...' : 'Create'}
             </button>
           </div>
         </form>
