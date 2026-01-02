@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const { url } = await request.json()
     const cookieStore = cookies()
     
-    // 1. Auth Check with PROPER TYPES
+    // 1. Auth Check
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -32,10 +32,8 @@ export async function POST(request: Request) {
             return cookieStore.get(name)?.value
           },
           set(name: string, value: string, options: CookieOptions) {
-            // Route handlers usually just read cookies for auth
           },
           remove(name: string, options: CookieOptions) {
-            // Route handlers usually just read cookies for auth
           },
         },
       }
@@ -57,21 +55,26 @@ export async function POST(request: Request) {
         price_number: metadata.price,
         currency: metadata.currency,
         source_domain: metadata.source,
-        raw_data: metadata // Store full scrape result here
+        raw_data: metadata 
       }).select().single()
       
       if (insertError) throw insertError
       product = newProduct
     }
 
+    // --- TYPESCRIPT FIX: Explicitly assert product exists ---
+    if (!product) {
+      throw new Error("Failed to resolve product")
+    }
+
     // 4. Save to User Collection
     const { error: saveError } = await supabase.from('saved_items').insert({
       user_id: user.id,
-      product_id: product.id,
-      collection_id: null // Default collection
+      product_id: product.id, 
+      collection_id: null 
     })
 
-    if (saveError && saveError.code !== '23505') { // Ignore duplicates
+    if (saveError && saveError.code !== '23505') { 
       throw saveError
     }
 
