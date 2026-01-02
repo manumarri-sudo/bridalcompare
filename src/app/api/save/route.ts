@@ -2,7 +2,6 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-// HELPER: Normalize strings to DB Enums (Prevents DB Crashes)
 function sanitizeEnum(val: string, allowed: string[], fallback: string) {
   if (!val) return fallback;
   const normalized = val.toLowerCase().trim().replace(/ /g, '_');
@@ -13,9 +12,7 @@ const ALLOWED_CATEGORIES = ['lehenga', 'saree', 'sherwani', 'gown', 'suit', 'kur
 
 async function scrapeUrl(url: string) {
   const apiKey = process.env.FIRECRAWL_API_KEY;
-  // If no API key, return a clean fallback immediately
   if (!apiKey) {
-    console.warn("Missing FIRECRAWL_API_KEY. Using fallback.");
     return { title: "New Saved Item", image: "https://placehold.co/600x400?text=Saved+Link", price: 0 };
   }
 
@@ -34,7 +31,6 @@ async function scrapeUrl(url: string) {
     const data = json.data || {};
     const meta = data.metadata || {};
 
-    // Price Extraction
     let price = 0;
     if (meta.price) price = parseFloat(meta.price);
     else if (meta.ogPrice) price = parseFloat(meta.ogPrice);
@@ -47,7 +43,6 @@ async function scrapeUrl(url: string) {
     };
   } catch (e) {
     console.error("Scrape Error:", e);
-    // FALLBACK: Don't crash, just save the link
     return { title: "Saved Link", image_url: "https://placehold.co/600x400?text=Saved+Link", price: 0 };
   }
 }
@@ -72,12 +67,10 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
 
-    // 1. Check if product exists, if not create it
     let { data: product } = await supabase.from('products').select('id').eq('url', url).single()
 
     if (!product) {
       const metadata = await scrapeUrl(url)
-      // Safety: Force category to 'accessories' if unknown to prevent DB crash
       const safeCategory = sanitizeEnum(metadata.title, ALLOWED_CATEGORIES, 'accessories');
       
       const { data: newProduct, error: insertError } = await supabase.from('products').insert({
@@ -92,15 +85,17 @@ export async function POST(request: Request) {
       }).select().single()
       
       if (insertError) {
-        console.error("DB Insert Error:", insertError)
-        // Check for RLS error specifically
         if (insertError.code === '42501') throw new Error("Database Permission Error: Please run the SQL fix.");
         throw new Error("Failed to save product details");
       }
       product = newProduct
     }
 
-    // 2. Save to Inbox
+    // --- TYPESCRIPT FIX: Explicitly check for null before proceeding ---
+    if (!product) {
+      throw new Error("Critical Error: Product could not be resolved.");
+    }
+
     const { error: saveError } = await supabase.from('saved_items').insert({
       user_id: user.id,
       product_id: product.id,
