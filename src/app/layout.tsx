@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
+import Navbar from "@/components/Navbar"; 
 import "./globals.css";
 
 const playfair = Playfair_Display({ 
@@ -17,7 +18,7 @@ const lato = Lato({
 
 export const metadata: Metadata = {
   title: "Vara | Curate Your Dream Wardrobe",
-  description: "The digital sanctuary for South Asian luxury fashion. Save, compare, and organize.",
+  description: "The digital sanctuary for South Asian luxury fashion.",
 };
 
 export default function RootLayout({
@@ -28,6 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${playfair.variable} ${lato.variable} font-sans bg-[#FFF8F0] text-gray-800 antialiased selection:bg-[#FB7185] selection:text-white`}>
+        {/* Navbar is Global now */}
+        <div className="sticky top-0 z-50">
+          <Navbar />
+        </div>
         {children}
       </body>
     </html>
