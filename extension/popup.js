@@ -2,9 +2,13 @@ const BASE_URL = 'https://www.vara.style';
 
 async function checkAuth() {
   try {
-    const response = await fetch(`${BASE_URL}/api/auth/session`, { credentials: 'include' });
+    const response = await fetch(`${BASE_URL}/api/auth/session`, { 
+      credentials: 'include',
+      mode: 'cors'
+    });
+    if (!response.ok) return false;
     const data = await response.json();
-    return data.authenticated;
+    return data.authenticated || false;
   } catch (error) {
     console.error('Auth check failed:', error);
     return false;
@@ -14,13 +18,14 @@ async function checkAuth() {
 async function getCurrentUrl() {
   return new Promise((resolve) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      resolve(tabs[0].url);
+      resolve(tabs[0]?.url || '');
     });
   });
 }
 
 function showStatus(message, type) {
   const status = document.getElementById('status');
+  if (!status) return;
   status.textContent = message;
   status.className = `status ${type}`;
   status.classList.remove('hidden');
@@ -33,9 +38,18 @@ async function init() {
   const authCheck = document.getElementById('auth-check');
   const notLoggedIn = document.getElementById('not-logged-in');
   const loggedIn = document.getElementById('logged-in');
+  
+  if (!authCheck || !notLoggedIn || !loggedIn) {
+    console.error('Missing UI elements');
+    return;
+  }
+  
   authCheck.classList.remove('hidden');
+  
   const isAuthenticated = await checkAuth();
+  
   authCheck.classList.add('hidden');
+  
   if (isAuthenticated) {
     loggedIn.classList.remove('hidden');
   } else {
@@ -43,54 +57,50 @@ async function init() {
   }
 }
 
-document.getElementById('login-btn')?.addEventListener('click', async () => {
-  chrome.tabs.create({ url: `${BASE_URL}/login` });
-  window.close();
-});
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-btn')?.addEventListener('click', () => {
+    chrome.tabs.create({ url: `${BASE_URL}/login` });
+    window.close();
+  });
 
-document.getElementById('signup-btn')?.addEventListener('click', async () => {
-  chrome.tabs.create({ url: `${BASE_URL}/signup` });
-  window.close();
-});
+  document.getElementById('signup-btn')?.addEventListener('click', () => {
+    chrome.tabs.create({ url: `${BASE_URL}/signup` });
+    window.close();
+  });
 
-document.getElementById('save-btn')?.addEventListener('click', async () => {
-  showStatus('Saving...', 'loading');
-  try {
-    const currentUrl = await getCurrentUrl();
-    const response = await chrome.runtime.sendMessage({ action: 'saveProduct', url: currentUrl });
-    
-    console.log('Response:', response);
-    
-    if (response.success) {
-      if (response.alreadySaved) {
-        showStatus('✓ Already in your collection!', 'success');
+  document.getElementById('save-btn')?.addEventListener('click', async () => {
+    showStatus('Saving...', 'loading');
+    try {
+      const currentUrl = await getCurrentUrl();
+      const response = await chrome.runtime.sendMessage({ 
+        action: 'saveProduct', 
+        url: currentUrl 
+      });
+      
+      if (response.success) {
+        if (response.alreadySaved) {
+          showStatus('Already saved!', 'success');
+        } else {
+          showStatus('Saved!', 'success');
+        }
+      } else if (response.error === 'LIMIT_REACHED') {
+        showStatus('Limit reached!', 'error');
+        setTimeout(() => {
+          chrome.tabs.create({ url: `${BASE_URL}/billing` });
+        }, 1500);
       } else {
-        const product = response.product;
-        showStatus(`✓ Saved: ${product.title}`, 'success');
-        chrome.notifications.create({
-          type: 'basic',
-          iconUrl: 'icons/icon128.png',
-          title: 'Saved to Vara!',
-          message: `${product.designer} - ₹${product.price_number || 'Price N/A'}`
-        });
+        showStatus('Failed to save', 'error');
       }
-    } else if (response.error === 'LIMIT_REACHED') {
-      showStatus('Limit reached! Upgrade', 'error');
-      setTimeout(() => {
-        chrome.tabs.create({ url: `${BASE_URL}/billing` });
-      }, 1500);
-    } else {
-      showStatus(response.error || 'Failed to save', 'error');
+    } catch (error) {
+      console.error('Save failed:', error);
+      showStatus('Error saving', 'error');
     }
-  } catch (error) {
-    console.error('Save failed:', error);
-    showStatus('Error: ' + error.message, 'error');
-  }
-});
+  });
 
-document.getElementById('view-btn')?.addEventListener('click', () => {
-  chrome.tabs.create({ url: `${BASE_URL}/collections/inbox` });
-  window.close();
-});
+  document.getElementById('view-btn')?.addEventListener('click', () => {
+    chrome.tabs.create({ url: `${BASE_URL}/collections` });
+    window.close();
+  });
 
-init();
+  init();
+});

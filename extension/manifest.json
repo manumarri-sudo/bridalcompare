@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Vara | Curate Your Dream Wardrobe",
-  "version": "2.4",
-  "description": "Save items from any South Asian designer to your personal sanctuary.",
-  "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": ["<all_urls>"],
+  "name": "Vara - Save South Asian Fashion",
+  "version": "2.6",
+  "description": "Save and organize outfits from 100+ South Asian designers",
+  "permissions": ["activeTab", "storage", "cookies", "notifications"],
+  "host_permissions": ["https://www.vara.style/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -12,9 +15,6 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
-  },
-  "background": {
-    "service_worker": "background.js"
   },
   "icons": {
     "16": "icons/icon16.png",
