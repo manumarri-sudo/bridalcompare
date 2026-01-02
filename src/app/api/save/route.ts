@@ -2,64 +2,53 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-// REAL FIRECRAWL SCRAPER
+// HELPER: Normalize strings to DB Enums (Prevents DB Crashes)
+function sanitizeEnum(val: string, allowed: string[], fallback: string) {
+  if (!val) return fallback;
+  const normalized = val.toLowerCase().trim().replace(/ /g, '_');
+  return allowed.includes(normalized) ? normalized : fallback;
+}
+
+const ALLOWED_CATEGORIES = ['lehenga', 'saree', 'sherwani', 'gown', 'suit', 'kurta', 'anarkali', 'palazzo', 'kaftan', 'indo_western', 'jewelry', 'accessories', 'footwear', 'dhoti', 'half_saree'];
+
 async function scrapeUrl(url: string) {
   const apiKey = process.env.FIRECRAWL_API_KEY;
-  
+  // If no API key, return a clean fallback immediately
   if (!apiKey) {
-    console.error("❌ FIRECRAWL_API_KEY is missing in Vercel Environment Variables");
+    console.warn("Missing FIRECRAWL_API_KEY. Using fallback.");
+    return { title: "New Saved Item", image: "https://placehold.co/600x400?text=Saved+Link", price: 0 };
   }
 
   try {
-    if (!apiKey) throw new Error("Missing FIRECRAWL_API_KEY");
-
-    // Call Firecrawl API
     const response = await fetch('https://api.firecrawl.dev/v0/scrape', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        url: url,
-        pageOptions: {
-          onlyMainContent: true,
-          includeHtml: false,
-          waitFor: 1000
-        }
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ 
+        url, 
+        pageOptions: { onlyMainContent: false, includeHtml: false } 
       })
     });
+    
+    if (!response.ok) throw new Error("Scraper failed");
+    const json = await response.json();
+    const data = json.data || {};
+    const meta = data.metadata || {};
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("Firecrawl API Error:", errText);
-      throw new Error(`Failed to scrape: ${response.statusText}`);
-    }
+    // Price Extraction
+    let price = 0;
+    if (meta.price) price = parseFloat(meta.price);
+    else if (meta.ogPrice) price = parseFloat(meta.ogPrice);
 
-    const data = await response.json();
-    const meta = data.data.metadata || {};
-
-    // Map Firecrawl data to our database schema
     return {
-      title: meta.title || data.data.title || "New Saved Item",
+      title: meta.title || data.title || "New Saved Item",
       image_url: meta.ogImage || meta.image || "https://placehold.co/600x400?text=No+Image",
-      price: 0,
-      currency: "USD",
-      source: new URL(url).hostname,
-      raw_data: data.data 
+      price: price || 0,
+      description: meta.description || ""
     };
-
-  } catch (error: any) { // <--- FIXED: Explicitly allow 'any' to access .message
-    console.error("Scraping Exception:", error);
-    // Fallback if scraping fails entirely
-    return {
-      title: "Saved Link",
-      image_url: "https://placehold.co/600x400?text=Saved+Link",
-      price: 0,
-      currency: "USD",
-      source: new URL(url).hostname,
-      raw_data: { error: error?.message || String(error) }
-    };
+  } catch (e) {
+    console.error("Scrape Error:", e);
+    // FALLBACK: Don't crash, just save the link
+    return { title: "Saved Link", image_url: "https://placehold.co/600x400?text=Saved+Link", price: 0 };
   }
 }
 
@@ -68,7 +57,6 @@ export async function POST(request: Request) {
     const { url } = await request.json()
     const cookieStore = cookies()
     
-    // 1. Auth Check
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -84,46 +72,47 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
 
-    // 2. Check if Product Exists
+    // 1. Check if product exists, if not create it
     let { data: product } = await supabase.from('products').select('id').eq('url', url).single()
 
-    // 3. If New, Scrape & Insert
     if (!product) {
       const metadata = await scrapeUrl(url)
+      // Safety: Force category to 'accessories' if unknown to prevent DB crash
+      const safeCategory = sanitizeEnum(metadata.title, ALLOWED_CATEGORIES, 'accessories');
+      
       const { data: newProduct, error: insertError } = await supabase.from('products').insert({
         url,
         title: metadata.title,
         image_url: metadata.image_url,
         price_number: metadata.price,
-        currency: metadata.currency,
-        source_domain: metadata.source,
-        raw_data: metadata.raw_data
+        currency: 'INR', 
+        source_domain: new URL(url).hostname,
+        normalized_category: safeCategory, 
+        normalized_color: 'neutral'
       }).select().single()
       
       if (insertError) {
-        console.error("Database Insert Error:", insertError);
-        throw new Error("Failed to save product to database");
+        console.error("DB Insert Error:", insertError)
+        // Check for RLS error specifically
+        if (insertError.code === '42501') throw new Error("Database Permission Error: Please run the SQL fix.");
+        throw new Error("Failed to save product details");
       }
       product = newProduct
     }
 
-    if (!product) throw new Error("Product creation failed");
-
-    // 4. Save to User Collection
+    // 2. Save to Inbox
     const { error: saveError } = await supabase.from('saved_items').insert({
       user_id: user.id,
       product_id: product.id,
       collection_id: null 
     })
 
-    if (saveError && saveError.code !== '23505') { 
-      throw saveError
-    }
+    if (saveError && saveError.code !== '23505') throw saveError
 
     return NextResponse.json({ success: true })
 
   } catch (e: any) {
-    console.error("Save Endpoint Error:", e)
+    console.error("API Error:", e)
     return NextResponse.json({ success: false, error: e.message }, { status: 500 })
   }
 }

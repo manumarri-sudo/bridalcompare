@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vara | Curate Your Dream Wardrobe",
-  "version": "2.1",
+  "version": "2.3",
   "description": "Save items from any South Asian designer to your personal sanctuary.",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["<all_urls>"],

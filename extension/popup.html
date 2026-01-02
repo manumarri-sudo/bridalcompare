@@ -11,26 +11,17 @@
     .container { padding: 24px; text-align: center; }
     .hidden { display: none !important; }
     
-    /* Luxe Header */
     h1 { font-family: "Playfair Display", serif; font-weight: 700; font-size: 38px; background: -webkit-linear-gradient(left, #fb7185, #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; margin-bottom: 4px; }
-    
-    /* Softer Subtext */
     p { font-size: 15px; line-height: 1.6; color: #888; margin-top: 8px; margin-bottom: 24px; font-weight: 400; }
     
     .btn { display: block; width: 100%; padding: 14px; margin-bottom: 12px; border: none; border-radius: 30px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; letter-spacing: 0.5px; }
-    
-    /* Primary Gradient Button */
     .btn-primary { background: linear-gradient(to right, #fb7185, #fb923c); color: white; box-shadow: 0 4px 15px rgba(251, 113, 133, 0.3); }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251, 113, 133, 0.4); }
     .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-    
-    /* Secondary Outline Button */
     .btn-secondary { background: white; color: #888; border: 1px solid #E5E5E5; }
     .btn-secondary:hover { background: #FAFAFA; color: #fb7185; border-color: #fb7185; }
     
     .status-box { margin-top: 20px; padding: 15px; border-radius: 12px; background: white; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    
-    /* Cute Spinner */
     .loader { width: 24px; height: 24px; border: 3px solid #fb7185; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite; margin-bottom: 10px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
@@ -54,13 +45,10 @@
   <div id="view-save" class="container hidden">
     <h1>vara</h1>
     <p>Found something you love?<br/>Add it to your collection.</p>
-    
     <button id="btn-save" class="btn btn-primary">♡ Save to My Collection</button>
     <button id="btn-dashboard" class="btn btn-secondary">View My Wardrobe</button>
-    
     <div id="status-msg" class="hidden"></div>
   </div>
-  
   <script src="popup.js"></script>
 </body>
 </html>
