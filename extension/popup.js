@@ -11,11 +11,17 @@ async function checkAuth() {
     const res = await fetch(`${BASE}/api/auth/session`, { credentials: 'include' });
     const data = await res.json();
     ui.loading.classList.add('hidden');
-    if (data.authenticated) ui.save.classList.remove('hidden');
-    else ui.login.classList.remove('hidden');
+    if (data.authenticated) {
+      ui.save.classList.remove('hidden');
+      return true;
+    } else {
+      ui.login.classList.remove('hidden');
+      return false;
+    }
   } catch (e) {
     ui.loading.classList.add('hidden');
     ui.login.classList.remove('hidden');
+    return false;
   }
 }
 
@@ -24,15 +30,24 @@ function setStatus(msg, type) {
   ui.status.className = 'status ' + type;
 }
 
-document.getElementById('btn-save').onclick = () => {
+document.getElementById('btn-save').onclick = async () => {
+  const isAuth = await checkAuth();
+  if (!isAuth) {
+    chrome.tabs.create({url: `${BASE}/login?return=${encodeURIComponent('/collections')}`});
+    return;
+  }
   setStatus('Scanning...', 'loading');
   chrome.tabs.query({active:true, currentWindow:true}, tabs => {
     chrome.tabs.sendMessage(tabs[0].id, {action: 'scrape_page'}, res => {
       const data = res || { url: tabs[0].url, title: tabs[0].title };
       setStatus('Saving...', 'loading');
       chrome.runtime.sendMessage({action: 'save', data}, apiRes => {
-        if(apiRes?.success) { setStatus('Saved! ✨', 'success'); setTimeout(()=>window.close(), 1500); }
-        else setStatus('Error saving.', 'error');
+        if(apiRes?.success) { 
+          setStatus('Saved! ✨', 'success'); 
+          setTimeout(()=>window.close(), 1500); 
+        } else { 
+          setStatus('Error saving.', 'error'); 
+        }
       });
     });
   });
