@@ -1,6 +1,16 @@
 
-// This "Brain" helps us pick icons even for custom user names
+// Legacy Labels (Kept to satisfy imports)
+export const EVENT_LABELS: Record<string, string> = {
+  'wedding': 'Wedding',
+  'sangeet': 'Sangeet',
+  'haldi': 'Haldi',
+  'reception': 'Reception',
+  'trousseau': 'Trousseau'
+};
+
+// New Smart Logic
 export function getSmartIcon(title: string): string {
+  if (!title) return '📁';
   const t = title.toLowerCase();
   
   if (t.includes('wedding') || t.includes('phera') || t.includes('muhurtham')) return '💍';
