@@ -1,54 +1,60 @@
 const BASE = 'https://www.vara.style';
 const ui = {
-  loading: document.getElementById('auth-loading'),
+  loading: document.getElementById('view-loading'),
   login: document.getElementById('view-login'),
   save: document.getElementById('view-save'),
-  status: document.getElementById('status')
+  msg: document.getElementById('status-msg'),
+  saveBtn: document.getElementById('btn-save')
 };
+
+function show(view) {
+  [ui.loading, ui.login, ui.save].forEach(el => el.classList.add('hidden'));
+  view.classList.remove('hidden');
+}
+
+function feedback(text, type='neutral') {
+  ui.msg.classList.remove('hidden');
+  ui.msg.innerHTML = `<div class="status-box" style="color:${type==='error'?'#EF4444':'#10B981'}">${text}</div>`;
+}
 
 async function checkAuth() {
   try {
-    const res = await fetch(`${BASE}/api/auth/session`, { credentials: 'include' });
+    const res = await fetch(`${BASE}/api/auth/session`);
     const data = await res.json();
-    ui.loading.classList.add('hidden');
     if (data.authenticated) {
-      ui.save.classList.remove('hidden');
+      show(ui.save);
       return true;
     } else {
-      ui.login.classList.remove('hidden');
+      show(ui.login);
       return false;
     }
   } catch (e) {
-    ui.loading.classList.add('hidden');
-    ui.login.classList.remove('hidden');
+    show(ui.login);
     return false;
   }
 }
 
-function setStatus(msg, type) {
-  ui.status.innerText = msg;
-  ui.status.className = 'status ' + type;
-}
-
 document.getElementById('btn-save').onclick = async () => {
-  const isAuth = await checkAuth();
-  if (!isAuth) {
-    chrome.tabs.create({url: `${BASE}/login?return=${encodeURIComponent('/collections')}`});
-    return;
-  }
-  setStatus('Scanning...', 'loading');
+  ui.saveBtn.innerText = "Saving...";
+  ui.saveBtn.disabled = true;
+  
   chrome.tabs.query({active:true, currentWindow:true}, tabs => {
-    chrome.tabs.sendMessage(tabs[0].id, {action: 'scrape_page'}, res => {
-      const data = res || { url: tabs[0].url, title: tabs[0].title };
-      setStatus('Saving...', 'loading');
-      chrome.runtime.sendMessage({action: 'save', data}, apiRes => {
-        if(apiRes?.success) { 
-          setStatus('Saved! ✨', 'success'); 
-          setTimeout(()=>window.close(), 1500); 
-        } else { 
-          setStatus('Error saving.', 'error'); 
-        }
-      });
+    const tab = tabs[0];
+    const payload = {
+      url: tab.url,
+      title: tab.title
+    };
+
+    chrome.runtime.sendMessage({action: 'save', data: payload}, res => {
+      ui.saveBtn.innerText = "♡ Save to Collection";
+      ui.saveBtn.disabled = false;
+
+      if(res && res.success) {
+        feedback("Lovely! We've saved this for you. ✨", 'success');
+        setTimeout(() => window.close(), 2000);
+      } else {
+        feedback("Oh no, we had trouble saving that. Please try again.", 'error');
+      }
     });
   });
 };
