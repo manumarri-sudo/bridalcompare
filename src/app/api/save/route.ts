@@ -8,10 +8,11 @@ async function scrapeUrl(url: string) {
   
   if (!apiKey) {
     console.error("❌ FIRECRAWL_API_KEY is missing in Vercel Environment Variables");
-    throw new Error("Server configuration error: Missing Scraper Key");
   }
 
   try {
+    if (!apiKey) throw new Error("Missing FIRECRAWL_API_KEY");
+
     // Call Firecrawl API
     const response = await fetch('https://api.firecrawl.dev/v0/scrape', {
       method: 'POST',
@@ -42,13 +43,13 @@ async function scrapeUrl(url: string) {
     return {
       title: meta.title || data.data.title || "New Saved Item",
       image_url: meta.ogImage || meta.image || "https://placehold.co/600x400?text=No+Image",
-      price: 0, // Firecrawl doesn't always extract price perfectly without LLM mode, default to 0
+      price: 0,
       currency: "USD",
       source: new URL(url).hostname,
-      raw_data: data.data // Save everything just in case
+      raw_data: data.data 
     };
 
-  } catch (error) {
+  } catch (error: any) { // <--- FIXED: Explicitly allow 'any' to access .message
     console.error("Scraping Exception:", error);
     // Fallback if scraping fails entirely
     return {
@@ -57,7 +58,7 @@ async function scrapeUrl(url: string) {
       price: 0,
       currency: "USD",
       source: new URL(url).hostname,
-      raw_data: { error: error.message }
+      raw_data: { error: error?.message || String(error) }
     };
   }
 }
