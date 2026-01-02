@@ -1,77 +1,96 @@
-"use client";
+'use client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-import { useState } from "react";
-import { Plus, X, Sparkles } from "lucide-react";
+export default function Compare() {
+  const [url, setUrl] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const router = useRouter()
 
-export default function ComparePage() {
-  const [urls, setUrls] = useState<string[]>([""]);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!url) return
+    
+    setLoading(true)
+    setStatus('idle')
 
-  const addUrl = () => {
-    if (urls.length < 20) {
-      setUrls([...urls, ""]);
+    try {
+      const res = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      })
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+           alert("Please log in to save items.")
+           router.push('/login?return=/compare')
+           return
+        }
+        throw new Error('Failed')
+      }
+
+      setStatus('success')
+      setUrl('')
+      setTimeout(() => router.push('/collections'), 1500)
+    } catch (e) {
+      setStatus('error')
+    } finally {
+      setLoading(false)
     }
-  };
-
-  const removeUrl = (index: number) => {
-    setUrls(urls.filter((_, i) => i !== index));
-  };
-
-  const updateUrl = (index: number, value: string) => {
-    const newUrls = [...urls];
-    newUrls[index] = value;
-    setUrls(newUrls);
-  };
+  }
 
   return (
-    <div className="min-h-screen max-w-4xl mx-auto px-4 py-20">
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-display mb-4">Compare Outfits</h1>
-        <p className="text-vara-warmGray text-lg">
+    <div className="min-h-[80vh] bg-[#FFF8F0] flex flex-col items-center justify-center px-4">
+      <div className="max-w-2xl w-full text-center">
+        <h1 className="text-5xl font-serif text-gray-900 mb-4">Compare Outfits</h1>
+        <p className="text-gray-500 mb-10 text-lg">
           Paste product URLs from your favorite designers and compare them side-by-side
         </p>
-      </div>
 
-      <div className="space-y-3 mb-8">
-        {urls.map((url, index) => (
-          <div
-            key={index}
-            className="group relative"
-          >
-            <input
-              type="url"
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="relative">
+            <input 
+              required
+              type="url" 
+              placeholder="https://shopkynah.com/products/..." 
               value={url}
-              onChange={(e) => updateUrl(index, e.target.value)}
-              placeholder="https://www.azafashions.com/..."
-              className="w-full px-6 py-4 pr-12 rounded-2xl border-2 border-gray-200 focus:border-vara-marigold focus:outline-none transition-all bg-white text-gray-900 placeholder-gray-400"
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full p-5 pl-6 rounded-2xl border-2 border-orange-200/50 shadow-sm focus:border-orange-400 focus:outline-none transition text-lg bg-white"
             />
-            {urls.length > 1 && (
-              <button
-                onClick={() => removeUrl(index)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-5 h-5 text-gray-400 hover:text-vara-deepRose" />
-              </button>
-            )}
           </div>
-        ))}
 
-        {urls.length < 20 && (
-          <button
-            onClick={addUrl}
-            className="w-full py-4 border-2 border-dashed border-gray-300 rounded-2xl hover:border-vara-marigold hover:bg-vara-marigold/5 transition-all flex items-center justify-center gap-2 text-vara-warmGray hover:text-vara-marigold"
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="mt-6 px-12 py-4 bg-gradient-to-r from-rose-400 to-orange-400 text-white rounded-full font-bold text-lg hover:shadow-xl hover:scale-105 transition disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mx-auto"
           >
-            <Plus className="w-5 h-5" />
-            <span className="font-medium">Add another URL</span>
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Extracting...
+              </>
+            ) : (
+              <>
+                ✨ Extract & Compare
+              </>
+            )}
           </button>
+        </form>
+
+        {status === 'success' && (
+          <div className="mt-8 p-4 bg-green-50 text-green-700 rounded-xl animate-fade-in-up border border-green-100">
+            ✅ Saved! Redirecting you to your collection...
+          </div>
+        )}
+        
+        {status === 'error' && (
+          <div className="mt-8 p-4 bg-red-50 text-red-600 rounded-xl animate-fade-in-up border border-red-100">
+            ⚠️ We couldn't extract that link. Please check the URL and try again.
+          </div>
         )}
       </div>
-
-      <div className="text-center">
-        <button className="vara-btn-primary inline-flex items-center gap-2">
-          <Sparkles className="w-5 h-5" />
-          Extract & Compare
-        </button>
-      </div>
     </div>
-  );
+  )
 }

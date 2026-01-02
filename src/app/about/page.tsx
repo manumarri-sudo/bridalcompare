@@ -1,21 +1,34 @@
-import Navbar from '@/components/Navbar'
 
 export default function About() {
   return (
     <div className="min-h-screen bg-[#FFF8F0]">
-      <Navbar />
-      <main className="max-w-3xl mx-auto px-8 py-16 text-center">
-        <h1 className="text-5xl font-serif text-[#FB7185] mb-8">Our Story</h1>
-        <p className="text-xl text-gray-600 leading-relaxed mb-8">
-          Vara was born out of the chaos of bridal shopping. With thousands of tabs open and screenshots lost in camera rolls, we knew there had to be a better way to organize South Asian luxury fashion.
-        </p>
-        <p className="text-xl text-gray-600 leading-relaxed mb-12">
-          We are building the digital sanctuary for your wardrobe dreams.
-        </p>
+      <main className="max-w-3xl mx-auto px-8 py-20 text-center">
+        <h1 className="text-5xl font-serif text-[#FB7185] mb-10">Our Story</h1>
         
-        <div className="border-t border-gray-200 pt-12">
-          <p className="text-gray-500 mb-4">Questions? Partnerships? Just want to say hi?</p>
-          <a href="mailto:hello@vara.style" className="text-2xl font-bold text-[#FB7185] hover:underline hover:text-[#F43F5E] transition">
+        <div className="space-y-8 text-lg text-gray-600 leading-relaxed font-light">
+          <p>
+            It started with a thousand open tabs.
+          </p>
+          <p>
+            Planning a South Asian wedding—or even just building a luxury wardrobe—is a journey of chaos and beauty. 
+            We found ourselves drowning in screenshots, losing track of designers, and struggling to visualize how 
+            it all came together.
+          </p>
+          <p>
+            We realized the modern woman needs more than a folder on her phone. She needs a sanctuary.
+          </p>
+          <p className="font-medium text-gray-800">
+            Vara is that sanctuary.
+          </p>
+          <p>
+            A place to save the intricate lehengas, the timeless sarees, and the pieces that make your heart skip a beat. 
+            We are building this for you, so you can focus less on the chaos and more on the magic.
+          </p>
+        </div>
+        
+        <div className="mt-16 pt-10 border-t border-gray-200">
+          <p className="text-gray-400 text-sm mb-2">WITH LOVE</p>
+          <a href="mailto:hello@vara.style" className="text-2xl font-serif font-bold text-[#FB7185] hover:text-[#F43F5E] transition">
             hello@vara.style
           </a>
         </div>

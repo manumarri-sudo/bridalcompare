@@ -1,7 +1,6 @@
 'use client'
 import { createBrowserClient } from '@supabase/ssr'
 import { useState, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 function SignupForm() {
@@ -9,7 +8,7 @@ function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
+  const [success, setSuccess] = useState(false)
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,8 +51,28 @@ function SignupForm() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/collections?welcome=true')
+      // SUCCESS STATE: Do not redirect. Show confirmation message.
+      setSuccess(true)
+      setLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-xl border border-gray-100 text-center animate-fade-in-up">
+        <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
+          ✉️
+        </div>
+        <h1 className="text-3xl font-serif font-bold text-[#FB7185] mb-4">Check your email</h1>
+        <p className="text-gray-600 mb-8 leading-relaxed">
+          We've sent a confirmation link to <strong>{formData.email}</strong>.<br/>
+          Please click the link to activate your account and start curating.
+        </p>
+        <Link href="/login" className="text-sm font-bold text-gray-400 hover:text-[#FB7185] uppercase tracking-wide">
+          Back to Login
+        </Link>
+      </div>
+    )
   }
 
   return (

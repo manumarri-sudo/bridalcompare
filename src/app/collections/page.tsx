@@ -1,11 +1,9 @@
 'use client'
-import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
 export default function Collections() {
   return (
     <div className="min-h-screen bg-[#FFF8F0]">
-      <Navbar />
       <main className="max-w-7xl mx-auto px-6 md:px-12 py-12">
         <div className="flex items-end justify-between mb-12">
           <h1 className="text-4xl md:text-5xl font-serif text-[#FB7185]">My Collection</h1>
